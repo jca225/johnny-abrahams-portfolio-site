@@ -51,18 +51,32 @@ function formatHour(h) {
 }
 
 function simulate(params) {
-  const { weightKg, sex, bedtimeHr, food, drinks, substance, running } = params;
+  const { weightKg, sex, bedtimeHr, food, drinks, substances, running } = params;
   const Vd_val = Vd(weightKg, sex);
   const k_acald = 0.28;
 
+  // Per-substance effects. Stacking is multiplicative on rate multipliers and
+  // additive on perceived-bedtime shift — same direction as the underlying
+  // physiology (each stimulant slows ethanol clearance, each adds to "stay-up"
+  // pressure, and inflammatory markers compound).
   const substanceEffects = {
-    none:     { vmaxMult: 1.00, perceivedBedtimeShift: 0,   acaldMult: 1.0 },
     caffeine: { vmaxMult: 0.92, perceivedBedtimeShift: 1.5, acaldMult: 1.1 },
     nicotine: { vmaxMult: 0.95, perceivedBedtimeShift: 1.0, acaldMult: 1.3 },
     adderall: { vmaxMult: 0.85, perceivedBedtimeShift: 3.0, acaldMult: 1.2 },
     bag:      { vmaxMult: 0.75, perceivedBedtimeShift: 4.0, acaldMult: 1.5 },
   };
-  const subst = substanceEffects[substance];
+  const subst = (substances ?? []).reduce(
+    (acc, key) => {
+      const e = substanceEffects[key];
+      if (!e) return acc;
+      return {
+        vmaxMult: acc.vmaxMult * e.vmaxMult,
+        perceivedBedtimeShift: acc.perceivedBedtimeShift + e.perceivedBedtimeShift,
+        acaldMult: acc.acaldMult * e.acaldMult,
+      };
+    },
+    { vmaxMult: 1.0, perceivedBedtimeShift: 0, acaldMult: 1.0 }
+  );
 
   let BAC = 0, AcAld = 0;
   const timeline = [];
@@ -111,17 +125,23 @@ function simulate(params) {
   const acaldComponent = Math.min(1, acaldOnset / 0.05);
   const congenerComponent = meanCongeners * Math.min(1, totalGrams / 60);
   const inflammatoryScore = 0.65 * acaldComponent + 0.35 * congenerComponent;
-  const dehydrationScore = Math.min(1, totalGrams / 90);
-  const fragmentationScore = Math.min(1, BACdropRate / 0.025);
+  // Saturation thresholds tightened to match self-reported hangover scales:
+  // dehydration tops out around 4 standard drinks (vasopressin suppression
+  // saturates fast), and fragmentation kicks in earlier as BAC clears.
+  const dehydrationScore = Math.min(1, totalGrams / 60);
+  const fragmentationScore = Math.min(1, BACdropRate / 0.018);
 
   const runningDiscount = running ? 0.72 : 1.0;
+  // Equal-weighted mean of five components, scaled to /10. The 1.15× boost
+  // pushes mid-range scores toward the "feels right" band: 6 beers ≈ 7,
+  // 8 beers ≈ 8. Floor is unchanged for very light drinking.
   const rawHangover = (
     0.20 * SWS_disruption +
     0.20 * REM_disruption +
     0.20 * inflammatoryScore +
     0.20 * dehydrationScore +
     0.20 * fragmentationScore
-  ) * 10;
+  ) * 10 * 1.15;
   const hangoverScore = Math.min(10, rawHangover * runningDiscount);
 
   const sleepData = [];
@@ -279,6 +299,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
 
   const handleClick = (hour, evt) => {
     const here = drinks.filter(d => d.hour === hour);
+    const allSameAsCurrent = here.length > 0 && here.every(d => d.type === drinkType);
 
     // Desktop power-user shortcut: shift- or alt-click stacks one drink onto the slot.
     if (evt.shiftKey || evt.altKey) {
@@ -296,9 +317,20 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
       return;
     }
 
-    // Single tap → toggle (record pre-state so a follow-up tap can become a double-tap).
+    // Single tap. Three cases:
+    //  (a) Empty slot       → add one drink of the currently-selected type.
+    //  (b) All-same-as-cur. → clear the slot (toggle off).
+    //  (c) Different/mixed  → stack one drink of the current type, so switching
+    //                         drink type and tapping is the natural way to mix
+    //                         (e.g. add a shot to a slot that already has a beer).
     lastTapRef.current = { hour, prevHere: here, time: now };
-    writeSlot(hour, here.length === 0 ? [{ hour, type: drinkType }] : []);
+    if (here.length === 0) {
+      writeSlot(hour, [{ hour, type: drinkType }]);
+    } else if (allSameAsCurrent) {
+      writeSlot(hour, []);
+    } else {
+      writeSlot(hour, stackOnto(hour, here));
+    }
   };
 
   return (
@@ -308,25 +340,48 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
           const here = drinks.filter(d => d.hour === h);
           const count = here.length;
           const active = count > 0;
-          const topType = active ? here[here.length - 1].type : null;
+          // Distinct drink types in this slot, in order of first appearance.
+          const uniqueTypes = [];
+          here.forEach(d => { if (!uniqueTypes.includes(d.type)) uniqueTypes.push(d.type); });
+          const isMixed = uniqueTypes.length > 1;
+          const displayEmojis = uniqueTypes.map(t => DRINK_TYPES[t].emoji).join("");
+          const slotFontSize = active
+            ? (uniqueTypes.length >= 3 ? 11 : uniqueTypes.length === 2 ? 14 : 18)
+            : 10;
           const isMid = h === 24;
           const is2am = h === 26;
+          // Friendly tooltip: "9PM — 2 beers, 1 shot"
+          const breakdown = uniqueTypes
+            .map(t => {
+              const n = here.filter(d => d.type === t).length;
+              return `${n} ${DRINK_TYPES[t].label.toLowerCase()}${n > 1 ? "s" : ""}`;
+            })
+            .join(", ");
           return (
             <button
               key={h}
               onClick={(e) => handleClick(h, e)}
-              title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""} (tap to toggle · double-tap to stack)`}
+              title={
+                count === 0
+                  ? `${formatHour(h)} — empty (tap to add ${DRINK_TYPES[drinkType].label.toLowerCase()})`
+                  : `${formatHour(h)} — ${breakdown}`
+              }
               className="hg-slot"
               style={{
                 borderColor: active ? "#37352f" : isMid ? "#c0bfbb" : is2am ? "#e0a0a0" : "#e9e9e7",
                 background: active ? "#37352f" : "#fbfbfa",
                 color: active ? "#fff" : isMid ? "#9b9b97" : is2am ? "#c07070" : "#c0bfbb",
-                fontSize: active ? 18 : 10,
+                fontSize: slotFontSize,
               }}
             >
-              {active ? DRINK_TYPES[topType].emoji : formatHour(h).replace(":00","").replace("PM","p").replace("AM","a")}
+              {active ? displayEmojis : formatHour(h).replace(":00","").replace("PM","p").replace("AM","a")}
               {count > 1 && (
-                <span className="hg-slot-badge">×{count}</span>
+                <span
+                  className="hg-slot-badge"
+                  style={isMixed ? { background: "#c07030" } : undefined}
+                >
+                  ×{count}
+                </span>
               )}
             </button>
           );
@@ -335,7 +390,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
       <div className="hg-grid-legend">
         <span>▏midnight</span>
         <span style={{ color: "#e0a0a0" }}>▏2am — diminishing returns</span>
-        <span className="hg-grid-help">tap to toggle · double-tap to stack · max 4 per slot</span>
+        <span className="hg-grid-help">tap = toggle · switch type &amp; tap = mix · double-tap = stack · max 4</span>
       </div>
     </div>
   );
@@ -363,7 +418,7 @@ export default function HangoverNotion() {
   const [sex, setSex] = useState("male");
   const [bedtimeHr, setBedtimeHr] = useState(23);
   const [food, setFood] = useState(true);
-  const [substance, setSubstance] = useState("none");
+  const [substances, setSubstances] = useState([]);
   const [running, setRunning] = useState(false);
   const [drinkType, setDrinkType] = useState("beer");
   const [drinks, setDrinks] = useState([
@@ -373,8 +428,8 @@ export default function HangoverNotion() {
   ]);
   const [chartTab, setChartTab] = useState("bac");
 
-  const result = useMemo(() => simulate({ weightKg, sex, bedtimeHr, food, drinks, substance, running }),
-    [weightKg, sex, bedtimeHr, food, drinks, substance, running]);
+  const result = useMemo(() => simulate({ weightKg, sex, bedtimeHr, food, drinks, substances, running }),
+    [weightKg, sex, bedtimeHr, food, drinks, substances, running]);
 
   const meta = hangoverMeta(result.hangoverScore);
 
@@ -563,7 +618,7 @@ export default function HangoverNotion() {
             </Section>
 
             <Section title="Modifiers" icon="⚗️">
-              <PropertyRow label="Other substances">
+              <PropertyRow label="Other substances" hint="select any · multi-toggle">
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {[
                     { k: "none", label: "None" },
@@ -571,17 +626,33 @@ export default function HangoverNotion() {
                     { k: "nicotine", label: "🚬 Nicotine" },
                     { k: "adderall", label: "💊 Adderall" },
                     { k: "bag", label: "👜 Bag" },
-                  ].map(({ k, label }) => (
-                    <Tag key={k} active={substance === k} onClick={() => setSubstance(k)}
-                      color={k === "none" ? "#37352f" : "#c04040"} activeBg={k === "none" ? "#e3e3e0" : "#fde8e8"}>
-                      {label}
-                    </Tag>
-                  ))}
+                  ].map(({ k, label }) => {
+                    const isActive = k === "none" ? substances.length === 0 : substances.includes(k);
+                    return (
+                      <Tag
+                        key={k}
+                        active={isActive}
+                        onClick={() => {
+                          if (k === "none") {
+                            setSubstances([]);
+                          } else {
+                            setSubstances((prev) =>
+                              prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]
+                            );
+                          }
+                        }}
+                        color={k === "none" ? "#37352f" : "#c04040"}
+                        activeBg={k === "none" ? "#e3e3e0" : "#fde8e8"}
+                      >
+                        {label}
+                      </Tag>
+                    );
+                  })}
                 </div>
               </PropertyRow>
-              {substance !== "none" && (
+              {substances.length > 0 && (
                 <div className="hg-warn-callout">
-                  ⚠ Shifts perceived bedtime later, slows ethanol elimination — BAC at sleep onset will be higher than expected
+                  ⚠ {substances.length === 1 ? "Shifts" : `Stacking ${substances.length} stimulants compounds`} perceived bedtime later, slows ethanol elimination — BAC at sleep onset will be higher than expected
                 </div>
               )}
           <PropertyRow label="Morning run" hint="−28% hangover score">
