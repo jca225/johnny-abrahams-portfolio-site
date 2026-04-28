@@ -51,32 +51,44 @@ function formatHour(h) {
 }
 
 function simulate(params) {
-  const { weightKg, sex, bedtimeHr, food, drinks, substances, running } = params;
+  const { weightKg, sex, bedtimeHr, food, drinks, substanceCounts, running } = params;
   const Vd_val = Vd(weightKg, sex);
   const k_acald = 0.28;
 
-  // Per-substance effects. Stacking is multiplicative on rate multipliers and
-  // additive on perceived-bedtime shift — same direction as the underlying
-  // physiology (each stimulant slows ethanol clearance, each adds to "stay-up"
-  // pressure, and inflammatory markers compound).
+  // Per-unit substance effects. Severity grows ~exponentially across the
+  // support [caffeine, nicotine, adderall, bag] — each step ≈ 2× the
+  // previous. Stacking N units of one substance compounds multiplicatively
+  // on rate multipliers (vmaxMult^N, acaldMult^N) and additively on the
+  // stay-up pressure (shift × N).
   const substanceEffects = {
-    caffeine: { vmaxMult: 0.92, perceivedBedtimeShift: 1.5, acaldMult: 1.1 },
-    nicotine: { vmaxMult: 0.95, perceivedBedtimeShift: 1.0, acaldMult: 1.3 },
-    adderall: { vmaxMult: 0.85, perceivedBedtimeShift: 3.0, acaldMult: 1.2 },
-    bag:      { vmaxMult: 0.75, perceivedBedtimeShift: 4.0, acaldMult: 1.5 },
+    caffeine: { vmaxMult: 0.97, perceivedBedtimeShift: 1.0, acaldMult: 1.05 },
+    nicotine: { vmaxMult: 0.94, perceivedBedtimeShift: 2.0, acaldMult: 1.10 },
+    adderall: { vmaxMult: 0.88, perceivedBedtimeShift: 4.0, acaldMult: 1.20 },
+    bag:      { vmaxMult: 0.76, perceivedBedtimeShift: 8.0, acaldMult: 1.40 },
   };
-  const subst = (substances ?? []).reduce(
-    (acc, key) => {
+  const counts = substanceCounts ?? {};
+  const subst = Object.entries(counts).reduce(
+    (acc, [key, count]) => {
       const e = substanceEffects[key];
-      if (!e) return acc;
+      if (!e || !count) return acc;
       return {
-        vmaxMult: acc.vmaxMult * e.vmaxMult,
-        perceivedBedtimeShift: acc.perceivedBedtimeShift + e.perceivedBedtimeShift,
-        acaldMult: acc.acaldMult * e.acaldMult,
+        vmaxMult: acc.vmaxMult * Math.pow(e.vmaxMult, count),
+        perceivedBedtimeShift: acc.perceivedBedtimeShift + e.perceivedBedtimeShift * count,
+        acaldMult: acc.acaldMult * Math.pow(e.acaldMult, count),
       };
     },
     { vmaxMult: 1.0, perceivedBedtimeShift: 0, acaldMult: 1.0 }
   );
+
+  // Effective sleep onset = the later of (a) usual bedtime + perceived shift
+  // from stimulants and (b) the last drink + a 30-min wind-down. If you keep
+  // drinking past your "usual bedtime," the simulator samples BAC at when
+  // you actually fall asleep — not when you said you wanted to.
+  const lastDrinkHr = drinks.length === 0 ? -Infinity : Math.max(...drinks.map(d => d.hour));
+  const drinkBuffer = drinks.length === 0 ? -Infinity : lastDrinkHr + 0.5;
+  const rawSleepOnset = Math.max(bedtimeHr + subst.perceivedBedtimeShift, drinkBuffer);
+  const effectiveSleepOnset = Math.min(rawSleepOnset, SIM_END - SLEEP_HOURS);
+  const sleepDelay = Math.max(0, effectiveSleepOnset - bedtimeHr);
 
   let BAC = 0, AcAld = 0;
   const timeline = [];
@@ -97,7 +109,7 @@ function simulate(params) {
     const gamma = Math.min(0.99, 0.3 + 0.7 * (BAC / 0.15));
     maxBAC = Math.max(maxBAC, BAC);
     maxAcAld = Math.max(maxAcAld, AcAld);
-    if (Math.abs(t - bedtimeHr) < DT) { BACatSleepOnset = BAC; AcAlDateSleepOnset = AcAld; }
+    if (Math.abs(t - effectiveSleepOnset) < DT) { BACatSleepOnset = BAC; AcAlDateSleepOnset = AcAld; }
     if (Math.round(t * 60) % 6 === 0) {
       timeline.push({
         t: Math.round(t * 10) / 10,
@@ -130,18 +142,22 @@ function simulate(params) {
   // saturates fast), and fragmentation kicks in earlier as BAC clears.
   const dehydrationScore = Math.min(1, totalGrams / 60);
   const fragmentationScore = Math.min(1, BACdropRate / 0.018);
+  // Sleep-deprivation: hours past the user's USUAL bedtime that they
+  // actually fall asleep. Caps at 3 hours late = 100%.
+  const sleepDeprivationScore = Math.min(1, sleepDelay / 3);
 
   const runningDiscount = running ? 0.72 : 1.0;
   // Equal-weighted mean of five components, scaled to /10. The 1.15× boost
-  // pushes mid-range scores toward the "feels right" band: 6 beers ≈ 7,
-  // 8 beers ≈ 8. Floor is unchanged for very light drinking.
+  // pushes mid-range scores toward the "feels right" band; the lateness
+  // multiplier (up to +40%) penalizes sleeping past your usual bedtime.
+  const latenessBoost = 1 + 0.4 * sleepDeprivationScore;
   const rawHangover = (
     0.20 * SWS_disruption +
     0.20 * REM_disruption +
     0.20 * inflammatoryScore +
     0.20 * dehydrationScore +
     0.20 * fragmentationScore
-  ) * 10 * 1.15;
+  ) * 10 * 1.15 * latenessBoost;
   const hangoverScore = Math.min(10, rawHangover * runningDiscount);
 
   const sleepData = [];
@@ -157,7 +173,7 @@ function simulate(params) {
     const remRebound= isFirstHalf ? 0 : reboundFrag * 0.3;
     const actualREM = normalREM * (1 - remLoss) * (1 - remRebound * (frac - 0.5));
     sleepData.push({
-      hour: formatHour(bedtimeHr + i),
+      hour: formatHour(effectiveSleepOnset + i),
       "Ideal SWS": Math.round(normalSWS * 100) / 100,
       "Ideal REM": Math.round(normalREM * 100) / 100,
       "Actual SWS": Math.round(Math.max(0, actualSWS) * 100) / 100,
@@ -173,6 +189,9 @@ function simulate(params) {
     inflammatoryScore: Math.round(inflammatoryScore * 100),
     dehydrationScore: Math.round(dehydrationScore * 100),
     fragmentationScore: Math.round(fragmentationScore * 100),
+    sleepDeprivationScore: Math.round(sleepDeprivationScore * 100),
+    sleepDelay: Math.round(sleepDelay * 10) / 10,
+    effectiveSleepOnset,
     maxBAC: Math.round(maxBAC * 1000) / 1000,
     bacOnset: Math.round(bacOnset * 1000) / 1000,
     totalGrams: Math.round(totalGrams),
@@ -412,7 +431,7 @@ export default function HangoverNotion() {
   const [sex, setSex] = useState("male");
   const [bedtimeHr, setBedtimeHr] = useState(23);
   const [food, setFood] = useState(true);
-  const [substances, setSubstances] = useState([]);
+  const [substanceCounts, setSubstanceCounts] = useState({});
   const [running, setRunning] = useState(false);
   const [drinkType, setDrinkType] = useState("beer");
   const [drinks, setDrinks] = useState([
@@ -422,8 +441,10 @@ export default function HangoverNotion() {
   ]);
   const [chartTab, setChartTab] = useState("bac");
 
-  const result = useMemo(() => simulate({ weightKg, sex, bedtimeHr, food, drinks, substances, running }),
-    [weightKg, sex, bedtimeHr, food, drinks, substances, running]);
+  const result = useMemo(() => simulate({ weightKg, sex, bedtimeHr, food, drinks, substanceCounts, running }),
+    [weightKg, sex, bedtimeHr, food, drinks, substanceCounts, running]);
+
+  const totalSubstanceUnits = Object.values(substanceCounts).reduce((s, n) => s + (n || 0), 0);
 
   const meta = hangoverMeta(result.hangoverScore);
 
@@ -612,7 +633,7 @@ export default function HangoverNotion() {
             </Section>
 
             <Section title="Modifiers" icon="⚗️">
-              <PropertyRow label="Other substances" hint="select any · multi-toggle">
+              <PropertyRow label="Other substances" hint="tap to cycle 0–4 · severity is exponential">
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {[
                     { k: "none", label: "None" },
@@ -621,32 +642,37 @@ export default function HangoverNotion() {
                     { k: "adderall", label: "💊 Adderall" },
                     { k: "bag", label: "👜 Bag" },
                   ].map(({ k, label }) => {
-                    const isActive = k === "none" ? substances.length === 0 : substances.includes(k);
+                    const count = substanceCounts[k] || 0;
+                    const isActive = k === "none" ? totalSubstanceUnits === 0 : count > 0;
                     return (
                       <Tag
                         key={k}
                         active={isActive}
                         onClick={() => {
                           if (k === "none") {
-                            setSubstances([]);
+                            setSubstanceCounts({});
                           } else {
-                            setSubstances((prev) =>
-                              prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]
-                            );
+                            setSubstanceCounts((prev) => {
+                              const cur = prev[k] || 0;
+                              const next = (cur + 1) % 5; // cycle 0→1→2→3→4→0
+                              const merged = { ...prev, [k]: next };
+                              if (next === 0) delete merged[k];
+                              return merged;
+                            });
                           }
                         }}
                         color={k === "none" ? "#37352f" : "#c04040"}
                         activeBg={k === "none" ? "#e3e3e0" : "#fde8e8"}
                       >
-                        {label}
+                        {label}{k !== "none" && count > 0 ? ` ×${count}` : ""}
                       </Tag>
                     );
                   })}
                 </div>
               </PropertyRow>
-              {substances.length > 0 && (
+              {totalSubstanceUnits > 0 && (
                 <div className="hg-warn-callout">
-                  ⚠ {substances.length === 1 ? "Shifts" : `Stacking ${substances.length} stimulants compounds`} perceived bedtime later, slows ethanol elimination — BAC at sleep onset will be higher than expected
+                  ⚠ {totalSubstanceUnits === 1 ? "Shifts" : `Stacking ${totalSubstanceUnits} units compounds`} perceived bedtime later, slows ethanol elimination — sleep onset and BAC at sleep will be higher than expected
                 </div>
               )}
           <PropertyRow label="Morning run" hint="−28% hangover score">
@@ -692,6 +718,12 @@ export default function HangoverNotion() {
                 sub={`${result.totalGrams} g ethanol total`} warn={result.dehydrationScore > 60} />
               <StatCard label="Fragmentation" value={`${result.fragmentationScore}%`}
                 sub="Clearance microarousals" warn={result.fragmentationScore > 60} />
+              {result.sleepDelay > 0 && (
+                <StatCard label="Sleep delay"
+                  value={`+${result.sleepDelay} h`}
+                  sub={`onset ${formatHour(result.effectiveSleepOnset)} (usual ${formatHour(bedtimeHr)})`}
+                  warn={result.sleepDelay > 1.5} />
+              )}
             </div>
 
             {/* Charts */}
@@ -727,7 +759,7 @@ export default function HangoverNotion() {
                     <Tooltip content={<ChartTooltip />} />
                     <ReferenceLine yAxisId="bac" y={0.08} stroke="#e0a0a0" strokeDasharray="4 2" label={{ value: "0.08 legal", fill: "#e0a0a0", fontSize: 10 }} />
                     <ReferenceLine yAxisId="bac" y={0.03} stroke="#c8d8a0" strokeDasharray="4 2" label={{ value: "0.03 REM", fill: "#9b9b97", fontSize: 10 }} />
-                    <ReferenceLine yAxisId="bac" x={formatHour(bedtimeHr)} stroke="#c0bfbb" strokeDasharray="2 2" label={{ value: "sleep", fill: "#c0bfbb", fontSize: 10 }} />
+                    <ReferenceLine yAxisId="bac" x={formatHour(result.effectiveSleepOnset)} stroke="#c0bfbb" strokeDasharray="2 2" label={{ value: "sleep", fill: "#c0bfbb", fontSize: 10 }} />
                     <Line yAxisId="bac" type="monotone" dataKey="BAC" stroke="#37352f" strokeWidth={2} dot={false} name="BAC (g/dL)" />
                     <Line yAxisId="acald" type="monotone" dataKey="AcAld" stroke="#c07030" strokeWidth={1.5} dot={false} name="Acetaldehyde" strokeDasharray="5 3" />
                     <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
