@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 
 // ─── MODEL ────────────────────────────────────────────────────────────────────
@@ -58,6 +58,7 @@ function simulate(params) {
   const substanceEffects = {
     none:     { vmaxMult: 1.00, perceivedBedtimeShift: 0,   acaldMult: 1.0 },
     caffeine: { vmaxMult: 0.92, perceivedBedtimeShift: 1.5, acaldMult: 1.1 },
+    nicotine: { vmaxMult: 0.95, perceivedBedtimeShift: 1.0, acaldMult: 1.3 },
     adderall: { vmaxMult: 0.85, perceivedBedtimeShift: 3.0, acaldMult: 1.2 },
     bag:      { vmaxMult: 0.75, perceivedBedtimeShift: 4.0, acaldMult: 1.5 },
   };
@@ -259,22 +260,44 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
   const slots = [];
   for (let h = 16; h <= 29.5; h += 0.5) slots.push(h);
 
-  const cycle = (hour, evt) => {
+  // Tap = toggle (empty → 1, anything → 0). Long-press / shift-click = +1 (stack up to 4).
+  const longPressTimer = useRef(null);
+  const longPressFired = useRef(false);
+
+  const setCount = (hour, fn) => {
     const here = drinks.filter(d => d.hour === hour);
     const others = drinks.filter(d => d.hour !== hour);
-    if (evt.shiftKey || evt.altKey) {
-      if (here.length === 0) return;
-      const next = here.slice(0, -1);
-      setDrinks([...others, ...next].sort((a, b) => a.hour - b.hour));
+    const next = fn(here);
+    setDrinks([...others, ...next].sort((a, b) => a.hour - b.hour));
+  };
+
+  const stackPlusOne = (hour) => {
+    setCount(hour, (here) => here.length >= MAX_PER_SLOT ? here : [...here, { hour, type: drinkType }]);
+  };
+
+  const handleClick = (hour, evt) => {
+    if (longPressFired.current) {
+      longPressFired.current = false;
       return;
     }
-    if (here.length >= MAX_PER_SLOT) {
-      setDrinks(others.sort((a, b) => a.hour - b.hour));
-    } else {
-      const next = [...here, { hour, type: drinkType }];
-      setDrinks([...others, ...next].sort((a, b) => a.hour - b.hour));
+    if (evt.shiftKey || evt.altKey) {
+      stackPlusOne(hour);
+      return;
     }
+    setCount(hour, (here) => here.length === 0 ? [{ hour, type: drinkType }] : []);
   };
+
+  const handleTouchStart = (hour) => {
+    longPressFired.current = false;
+    clearTimeout(longPressTimer.current);
+    longPressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      stackPlusOne(hour);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20);
+    }, 420);
+  };
+
+  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
 
   return (
     <div>
@@ -289,8 +312,12 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
           return (
             <button
               key={h}
-              onClick={(e) => cycle(h, e)}
-              title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""}${count > 0 ? " (shift-click to remove)" : ""}`}
+              onClick={(e) => handleClick(h, e)}
+              onTouchStart={() => handleTouchStart(h)}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+              title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""}${count > 0 ? " (tap to clear, hold to stack)" : ""}`}
               className="hg-slot"
               style={{
                 borderColor: active ? "#37352f" : isMid ? "#c0bfbb" : is2am ? "#e0a0a0" : "#e9e9e7",
@@ -310,7 +337,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
       <div className="hg-grid-legend">
         <span>▏midnight</span>
         <span style={{ color: "#e0a0a0" }}>▏2am — diminishing returns</span>
-        <span className="hg-grid-help">tap to add · shift-click to remove · max 4 per slot</span>
+        <span className="hg-grid-help">tap to toggle · hold to stack · max 4 per slot</span>
       </div>
     </div>
   );
@@ -334,7 +361,6 @@ const ChartTooltip = ({ active, payload, label }) => {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function HangoverNotion() {
-  const [view, setView] = useState("inputs");          // 'inputs' | 'results'
   const [weightKg, setWeightKg] = useState(75);
   const [sex, setSex] = useState("male");
   const [bedtimeHr, setBedtimeHr] = useState(23);
@@ -353,15 +379,6 @@ export default function HangoverNotion() {
     [weightKg, sex, bedtimeHr, food, drinks, substance, running]);
 
   const meta = hangoverMeta(result.hangoverScore);
-
-  const showResults = () => {
-    setView("results");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const editInputs = () => {
-    setView("inputs");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   return (
     <div className="hg-page">
@@ -451,6 +468,18 @@ export default function HangoverNotion() {
           flex-wrap: wrap;
         }
 
+        /* ── Results divider (between inputs and results) ───────────────── */
+        .hg-results-divider {
+          display: flex; align-items: center; gap: 16px;
+          margin: 40px 0 24px;
+          scroll-margin-top: 80px;
+        }
+        .hg-results-rule { flex: 1; height: 1px; background: #e9e9e7; }
+        .hg-results-label {
+          font-family: 'system-ui', sans-serif; font-size: 11px; font-weight: 600;
+          letter-spacing: 0.18em; text-transform: uppercase; color: #9b9b97;
+        }
+
         /* ── Tabs (chart selector) ──────────────────────────────────────── */
         .hg-tabs { display: flex; gap: 0; border-bottom: 1px solid #e9e9e7; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .hg-tab {
@@ -501,22 +530,7 @@ export default function HangoverNotion() {
           congener inflammation, dehydration load, and sleep architecture disruption.
         </p>
 
-        {/* Step indicator */}
-        <div className="hg-steps">
-          <span className={`hg-step ${view === "inputs" ? "active" : "done"}`}>
-            <span className="dot">{view === "inputs" ? "1" : "✓"}</span>
-            <span className="hg-step-label">Inputs</span>
-          </span>
-          <span className="hg-step-sep">———</span>
-          <span className={`hg-step ${view === "results" ? "active" : ""}`}>
-            <span className="dot">2</span>
-            <span className="hg-step-label">Results</span>
-          </span>
-        </div>
-
-        {view === "inputs" ? (
-          <>
-            <Section title="Physiology" icon="🧬">
+        <Section title="Physiology" icon="🧬">
               <SliderProp label="Body weight" value={weightKg} min={45} max={130} onChange={setWeightKg}
                 display={`${weightKg} kg`} hint={`${Math.round(weightKg * 2.205)} lb`} />
               <PropertyRow label="Sex" hint="affects Vd (volume of distribution)">
@@ -555,6 +569,7 @@ export default function HangoverNotion() {
                   {[
                     { k: "none", label: "None" },
                     { k: "caffeine", label: "☕ Caffeine" },
+                    { k: "nicotine", label: "🚬 Nicotine" },
                     { k: "adderall", label: "💊 Adderall" },
                     { k: "bag", label: "👜 Bag" },
                   ].map(({ k, label }) => (
@@ -570,26 +585,23 @@ export default function HangoverNotion() {
                   ⚠ Shifts perceived bedtime later, slows ethanol elimination — BAC at sleep onset will be higher than expected
                 </div>
               )}
-              <PropertyRow label="Morning run" hint="−28% hangover score">
-                <Toggle value={running} onChange={setRunning} />
-              </PropertyRow>
-            </Section>
+          <PropertyRow label="Morning run" hint="−28% hangover score">
+            <Toggle value={running} onChange={setRunning} />
+          </PropertyRow>
+        </Section>
 
-            <button className="hg-cta" onClick={showResults}>
-              See results <span aria-hidden="true">→</span>
-            </button>
-          </>
-        ) : (
-          <>
-            <button className="hg-cta hg-cta-secondary" onClick={editInputs}>
-              ← Edit inputs
-            </button>
+        {/* Divider into the results region */}
+        <div id="results" className="hg-results-divider">
+          <span className="hg-results-rule" />
+          <span className="hg-results-label">Results</span>
+          <span className="hg-results-rule" />
+        </div>
 
-            {/* Score callout */}
-            <div
-              className="hg-score-callout"
-              style={{ background: meta.bg, border: `1px solid ${meta.color}30`, marginTop: 24 }}
-            >
+        {/* Score callout */}
+        <div
+          className="hg-score-callout"
+          style={{ background: meta.bg, border: `1px solid ${meta.color}30` }}
+        >
               <span style={{ fontSize: 36 }}>{meta.emoji}</span>
               <div>
                 <div style={{ fontSize: 13, color: meta.color, fontFamily: "'system-ui', sans-serif", fontWeight: 500 }}>Predicted next-day outcome</div>
@@ -738,12 +750,6 @@ export default function HangoverNotion() {
                 <div>Frag = min(1, BAC_drop_rate / 0.025)</div>
               </div>
             </Section>
-
-            <button className="hg-cta hg-cta-secondary" onClick={editInputs} style={{ marginTop: 24 }}>
-              ← Edit inputs
-            </button>
-          </>
-        )}
 
         <div className="hg-footer-note">
           Widmark BAC · Michaelis–Menten elimination · Gamma absorption · Acetaldehyde &amp; congener
