@@ -1,0 +1,48 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="The Quant Game"
+  subtitle="A full-stack options-trading sandbox: build a strategy, backtest it against 61M historical data points on AWS, watch the equity curve. Co-founded with a friend in summer 2024."
+  meta="2024 · co-founded · React + Python + AWS"
+  links={[
+    { label: 'Demo (mp4)', href: '/media/trading-application-demo.mp4', external: true },
+  ]}
+  description="Full-stack options-trading simulator backed by 61M historical data points on AWS."
+>
+  <p>
+    The Quant Game lets a non-quant build a credible options strategy without
+    setting up a backtester. Pick instruments, define entry/exit rules, run
+    against history, get a P&amp;L curve and risk-adjusted metrics back. The
+    aim was to make the simulation step as low-friction as a paper-trading
+    app while still being honest about market microstructure.
+  </p>
+
+  <h2>What I built</h2>
+  <ul>
+    <li>
+      <strong>Frontend.</strong> React UI for strategy authoring &mdash; drag
+      a few rules together, configure parameters, hit run.
+    </li>
+    <li>
+      <strong>Backend.</strong> Python service for strategy interpretation and
+      backtest execution; vectorised where possible, looped where the
+      strategy logic required it.
+    </li>
+    <li>
+      <strong>Data layer.</strong> 61&nbsp;million financial data points
+      (options chains + equities, time-aligned) stored on AWS, indexed for
+      strategy-replay access patterns. The data infrastructure was the part
+      that made the rest possible.
+    </li>
+    <li>
+      <strong>Bayesian parameter optimisation</strong> on top of the
+      backtester for users who wanted to tune a strategy automatically.
+    </li>
+  </ul>
+
+  <p class="muted">
+    Co-founded May–August 2024. A short demo video is linked at the top.
+  </p>
+</Project>

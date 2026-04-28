@@ -1,0 +1,56 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="Dropbox Document Search Engine"
+  subtitle="A full-stack search engine over ~23,000 Dropbox documents for an early-stage startup, with sentence-level highlight extraction. My Lehigh CSE capstone."
+  meta="2024 · capstone · NLP + AWS"
+  links={[
+    { label: 'Highlighting algorithm writeup', href: '/papers/highlighting-algorithm.pdf', external: true },
+  ]}
+  description="Capstone search engine over 23K Dropbox documents with sentence-level highlight extraction."
+>
+  <p>
+    The startup had ~23,000 documents on Dropbox and no way to find anything.
+    Naïve keyword search across that many heterogeneous files (PDFs, Word,
+    plain text, scanned-image documents with OCR layers) would have been slow
+    and unhelpful &mdash; users want a result list with the matching
+    <em>passage</em> shown, not just the file name.
+  </p>
+
+  <h2>What I built</h2>
+  <ul>
+    <li>
+      <strong>Document preprocessing.</strong> A pipeline that parses the
+      diverse file types into a normalised text representation, segments at
+      the sentence level using NLP models, and indexes per-sentence so we
+      can map a query back to the exact span that matched.
+    </li>
+    <li>
+      <strong>Partitioned index.</strong> Sentence-level keyword mapping with
+      per-document partitioning, so query latency stays low even as the
+      corpus grows.
+    </li>
+    <li>
+      <strong>Dropbox API integration.</strong> Real-time access to the
+      original document for context expansion when a user clicks a result.
+    </li>
+    <li>
+      <strong>Highlighting algorithm.</strong> Given a query and a matched
+      sentence, surface the minimal sub-span that explains the match. This
+      part is documented in the linked writeup above.
+    </li>
+  </ul>
+
+  <p>
+    Hosting on AWS, written in Python. The whole thing was scoped for a
+    one-engineer summer, which is part of why I picked the partitioned
+    index over a heavier ML retrieval stack.
+  </p>
+
+  <p class="muted">
+    Capstone for the Computer Science &amp; Engineering BS at Lehigh
+    (May 2024 – July 2025).
+  </p>
+</Project>

@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import HangoverSimulator from '../components/HangoverSimulator.jsx';
+---
+
+<Base
+  title="Hangover Simulator"
+  description="An ODE-based hangover model: BAC kinetics, acetaldehyde clearance, sleep architecture disruption, and an RL discount factor for drunk-you's choices."
+>
+  <HangoverSimulator client:load />
+</Base>

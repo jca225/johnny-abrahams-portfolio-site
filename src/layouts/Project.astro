@@ -1,0 +1,68 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  meta?: string;          // e.g. "2025 · Rust · Co-authored"
+  links?: { label: string; href: string; external?: boolean }[];
+  description?: string;
+}
+const { title, subtitle, meta, links = [], description } = Astro.props;
+---
+
+<Base title={title} description={description ?? subtitle ?? title} current="projects">
+  <article class="project-article">
+    <header class="container project-header">
+      <a href="/#projects" class="back-link">← All projects</a>
+      {meta && <span class="eyebrow project-meta">{meta}</span>}
+      <h1 class="display display-md project-title">{title}</h1>
+      {subtitle && <p class="lead project-subtitle">{subtitle}</p>}
+      {links.length > 0 && (
+        <ul class="project-links">
+          {links.map((l) => (
+            <li>
+              <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+                {l.label} <span aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </header>
+    <hr class="rule project-rule" />
+    <div class="container prose project-body">
+      <slot />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .project-article { padding-top: 2.5rem; padding-bottom: 4rem; }
+  .project-header { display: flex; flex-direction: column; gap: 1.1rem; }
+  .back-link {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    border: none;
+    align-self: flex-start;
+  }
+  .back-link:hover { color: var(--accent); }
+  .project-meta { color: var(--ink-muted); }
+  .project-title { margin-top: 0.25rem; }
+  .project-subtitle { color: var(--ink-muted); max-width: 60ch; }
+  .project-links {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  .project-links a { border-bottom: 1px solid var(--rule-strong); padding-bottom: 1px; }
+  .project-rule { margin: 2.5rem 0 2.5rem; }
+  .project-body { font-family: var(--font-sans); }
+</style>

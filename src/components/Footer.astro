@@ -1,0 +1,56 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container container-wide footer-inner">
+    <div class="footer-col">
+      <span class="eyebrow">Elsewhere</span>
+      <ul class="footer-list">
+        <li><a href="mailto:johnnycabrahams@gmail.com">johnnycabrahams@gmail.com</a></li>
+        <li><a href="https://github.com/jca225" target="_blank" rel="noopener">github.com/jca225</a></li>
+        <li><a href="https://www.linkedin.com/in/john-abrahams-94a04924a/" target="_blank" rel="noopener">linkedin</a></li>
+      </ul>
+    </div>
+    <div class="footer-meta">
+      <span class="mono faint">© {year} — John Abrahams</span>
+      <span class="mono faint">built with Astro</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 3rem 4rem;
+    margin-top: 4rem;
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: end;
+  }
+  .footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.6rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.95rem;
+  }
+  .footer-list a { border: none; color: var(--ink); }
+  .footer-list a:hover { color: var(--accent); }
+  .footer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: right;
+    font-size: 0.78rem;
+  }
+  @media (max-width: 600px) {
+    .footer-inner { grid-template-columns: 1fr; }
+    .footer-meta { text-align: left; }
+  }
+</style>

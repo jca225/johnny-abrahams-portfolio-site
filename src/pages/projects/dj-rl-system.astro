@@ -1,0 +1,178 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="DJ Reinforcement Learning System"
+  subtitle="A wireless ESP32-S2 sensor mesh feeds crowd-engagement data to a 2M-parameter GRU pretrained on ~3,000 DJ sets, with an RL head that adapts the next-song recommendation to live audience reaction."
+  meta="Fall 2025 · finished Dec 2025 · UPenn ESE 519 · with Chris Spletzer"
+  links={[
+    { label: 'Final report', href: 'https://upenn-embedded.github.io/final-project-f25-underdogs.github.io/', external: true },
+    { label: 'Demo video', href: 'https://drive.google.com/file/d/1ZmYd9pcVVfsIZrL_sggFRo0MlVHi0CtK/view?usp=sharing', external: true },
+  ]}
+  description="A wireless ESP32 sensor mesh + RL-augmented GRU sequence model that recommends DJ set transitions based on real-time crowd engagement. UPenn ESE 519, Fall 2025."
+>
+  <h2>Premise</h2>
+  <p>
+    A DJ is faced with an impossible amount of information to sift through.
+    With roughly 475&nbsp;million songs across Spotify and SoundCloud combined,
+    and a curated DJ library that easily exceeds 1,000 tracks, it is hard to
+    pay attention to the crowd&rsquo;s reaction <em>and</em> pick the next
+    song.
+  </p>
+  <p>
+    This project uses deep learning and reinforcement learning to traverse
+    that maze on the DJ&rsquo;s behalf. A wireless sensor mesh measures crowd
+    engagement; a sequence model trained on real DJ sets proposes the next
+    song; an RL head nudges that proposal based on what the crowd just did.
+    <strong>The algorithm exploits, the musician explores.</strong>
+  </p>
+
+  <h2>What it actually looks like</h2>
+  <figure>
+    <img src="/images/dj-rl/system-block-final.png" alt="Final system block diagram for the DJ RL system" />
+    <figcaption>
+      Fig. — The final system. I&sup2;C is the backbone between the controller
+      ESP, the ATMega LCD, and the Raspberry Pi; ESP-NOW carries data from the
+      peripheral sensor packs to the controller; WiFi carries everything to
+      the Mac running RTRLOS.
+    </figcaption>
+  </figure>
+
+  <h3>Sensor mesh (Chris)</h3>
+  <p>
+    Two peripheral packs, each a UM FeatherS2 (ESP32-S2) with a sensor and a
+    LiPo battery, deployed wirelessly across the venue:
+  </p>
+  <ul>
+    <li>
+      <strong>Environmental (BME680):</strong> ambient temperature, humidity,
+      pressure, VOC. All three move with crowd exertion. I&sup2;C to the
+      FeatherS2.
+    </li>
+    <li>
+      <strong>Audio (MAX9814):</strong> a microphone with automatic gain
+      control. Sampled over a 50&nbsp;ms window; min/max → ADC → calibrated
+      decibel value. Required attenuation tuning on the ESP&rsquo;s 12-bit ADC
+      to avoid clipping the bias-shifted output.
+    </li>
+  </ul>
+  <p>
+    Both packs broadcast over <strong>ESP-NOW</strong> to a single controller
+    FeatherS2. The controller&rsquo;s callback is deliberately tiny &mdash;
+    flag-set only &mdash; because we previously bricked three FeatherS2 boards
+    stacking heavier work in the callback alongside I&sup2;C.
+  </p>
+
+  <h3>Raspberry Pi (mine)</h3>
+  <p>
+    The Pi is the I&sup2;C master and the WiFi bridge. It pulls data from the
+    controller ESP and from a thermal camera (calculating per-frame motion as
+    the Frobenius norm of the consecutive-frame difference matrix), packages
+    everything into JSON, and sends it to the Mac. It also pushes selected
+    fields over I&sup2;C to the ATMega328PB, which drives the LCD &mdash; the
+    bare-metal-C complexity requirement for the course.
+  </p>
+
+  <h3>RTRLOS &mdash; the orchestrator (mine)</h3>
+  <p>
+    RTRLOS stands for &ldquo;Real-Time Reinforcement-Learning Operating
+    System.&rdquo; It is, charitably, none of those things: not real-time, not
+    pre-emptive, not using a scheduler we wrote in this class. It is built on
+    Python&rsquo;s <code>asyncio</code> and <code>threading</code> primitives,
+    which give us an event-driven loop and context-switching.
+  </p>
+  <p>
+    The architectural inspiration is GoLang&rsquo;s parallelism idiom:
+    <em>share memory by communicating</em>, not the other way around. We
+    model channels with <code>asyncio.Queue</code> and the Pi-to-Mac pipe is
+    a long-lived WebSocket connection rather than shared mutable state.
+  </p>
+
+  <div class="callout">
+    <strong>Why &ldquo;real-time&rdquo;?</strong> &mdash; because the loop
+    closes every 100&nbsp;ms whether or not inference has caught up. Late
+    sensor readings are dropped at the head of the queue, not buffered. The
+    DJ should never feel the system stall.
+  </div>
+
+  <h2>The model</h2>
+  <p>
+    Two stages, mutually exclusive and chained:
+  </p>
+  <ol>
+    <li>
+      <strong>Pretraining (offline).</strong> A custom web-scraper collected
+      ~3,000 DJ sets. After preprocessing &mdash; trackname normalisation,
+      audio-metadata extraction, embedding lookup &mdash; the corpus became a
+      sequence-prediction dataset: <em>given the last K songs, predict the
+      next</em>. We trained a small 2&nbsp;M-parameter GRU (<strong>1,799,552
+      parameters</strong>) on next-song-in-sequence loss. Done before the
+      semester started.
+    </li>
+    <li>
+      <strong>Reinforcement-learning head (online).</strong> A small MLP
+      sitting on top of the GRU&rsquo;s latent. It takes
+      <code>[of_dx, of_dy, tof_mm, thermal_avgC, audio_db, &hellip;]</code> +
+      the current sequence state and outputs a nudge vector. The RL signal is
+      crowd movement after a song change. The frozen GRU contributes
+      structure; the RL head contributes adaptation.
+    </li>
+  </ol>
+
+  <figure>
+    <img src="/images/dj-rl/pretrain-loss-curve.png" alt="Pretraining loss curve for the GRU sequence model" />
+    <figcaption>
+      Fig. — Pretraining loss curve for the GRU. Loss decreases monotonically
+      and converges; the model successfully learned next-track structure on
+      the scraped dataset.
+    </figcaption>
+  </figure>
+
+  <p>
+    A simple in-memory vector database holds song embeddings; the inference
+    step finds nearest-neighbour candidates to the predicted vector and ranks
+    them. For an MVP-stage prototype with ~1,000 songs this is sufficient; a
+    production version would swap in a real vector store.
+  </p>
+
+  <h2>What changed during the build</h2>
+  <p>
+    Almost all of the original hardware plan changed. The original block
+    diagram had a single ATMega328PB at the centre, talking UART up to the
+    Mac. The MVP demo inverted that: the Pi became the centre, the ATMega
+    moved to the LCD edge, and UART became WiFi/JSON. The reasons were
+    boring &mdash; sensor stack on the ATMega was prohibitively
+    register-heavy for the parts we had &mdash; but the lesson was useful:
+    <em>simplify the data streams</em>. Most of our debugging time was spent
+    on protocol crossings (I&sup2;C ↔ ESP-NOW ↔ WiFi), not on application
+    logic.
+  </p>
+
+  <h2>What I&rsquo;d build next</h2>
+  <ul>
+    <li>
+      <strong>Better playback.</strong> The current system recommends a single
+      next track. The interesting version overlaps stems &mdash; mix
+      acapellas onto instrumentals, beat-match in software &mdash; so the
+      &ldquo;recommendation&rdquo; is a transition, not a track.
+    </li>
+    <li>
+      <strong>Bigger pretraining corpus &amp; richer features.</strong> 3K
+      sets and metadata-only embeddings were a starting point; raw audio
+      embeddings (CLAP, Audio MAE) would let the model reason about timbre
+      and energy directly.
+    </li>
+    <li>
+      <strong>Off-board the thermal camera.</strong> Today it&rsquo;s I&sup2;C
+      to the Pi, which means the Pi sits where the camera sits. Moving the
+      camera onto its own ESP peripheral pack gets it overhead, where it
+      wants to be.
+    </li>
+  </ul>
+
+  <p class="muted">
+    Built with Chris Spletzer for ESE&nbsp;519 at UPenn (Fall 2025).
+    Full report and demo video linked above.
+  </p>
+</Project>

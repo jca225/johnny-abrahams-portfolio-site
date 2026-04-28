@@ -1,0 +1,40 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  tags: string;
+  blurb: string;
+  featured?: boolean;
+  external?: boolean;
+}
+const { href, title, tags, blurb, featured = false, external = false } = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={['card', featured && 'card-featured']}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener' : undefined}
+>
+  <div class="card-row">
+    <h3 class="card-title">{title}</h3>
+    <span class="card-tags">{tags}</span>
+  </div>
+  <p class="card-blurb">{blurb}</p>
+  <span class="card-arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+  .card {
+    border-bottom: none;
+  }
+  .card-arrow {
+    position: absolute;
+    right: 0;
+    bottom: 1.6rem;
+  }
+  .card-featured .card-arrow { bottom: 2.4rem; }
+  @media (max-width: 600px) {
+    .card-arrow { display: none; }
+  }
+</style>

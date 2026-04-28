@@ -1,0 +1,172 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Writing"
+  description="Selected papers and writeups by John Abrahams — systems, applied ML, and clinical research."
+  current="writing"
+>
+  <section class="section">
+    <div class="container">
+      <span class="eyebrow">Writing</span>
+      <h1 class="display display-md writing-h1">Papers &amp; writeups.</h1>
+      <p class="lead writing-lead">
+        A short list. The systems work and the clinical work usually share an
+        author with someone smarter than me; the academic work occasionally
+        does too.
+      </p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container">
+      <article class="entry">
+        <header class="entry-head">
+          <h2 class="entry-title">
+            <a href="/papers/khronos.pdf" target="_blank" rel="noopener">
+              Khronos: A Type II Exovisor Architecture with WebAssembly
+            </a>
+          </h2>
+          <span class="mono entry-meta">2025 · with Ajax Li · IEEE format · 9 pp.</span>
+        </header>
+        <p class="entry-blurb">
+          A multi-tenant WebAssembly runtime that combines language-level
+          sandboxing with exokernel-style capability gating and a custom
+          <code>wasi:thread-spawn</code> dispatcher. ~5,000 lines of Rust;
+          ~0.08&nbsp;MiB per isolate (3× denser than Wasmtime, 18× denser than
+          Docker); up to 6.7× speedup on dense matrix multiply while
+          preserving per-tenant trap containment.
+        </p>
+        <p class="entry-links">
+          <a href="/projects/khronos">Project page</a>
+          <span aria-hidden="true">·</span>
+          <a href="/papers/khronos.pdf" target="_blank" rel="noopener">PDF ↗</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/jca225/webAssembly_Interpreter" target="_blank" rel="noopener">GitHub ↗</a>
+        </p>
+      </article>
+
+      <article class="entry">
+        <header class="entry-head">
+          <h2 class="entry-title">
+            <a href="/papers/zimvie-acdf-predictive-modeling.pdf" target="_blank" rel="noopener">
+              A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling
+            </a>
+          </h2>
+          <span class="mono entry-meta">2024 · co-author · 236-patient cohort</span>
+        </header>
+        <p class="entry-blurb">
+          Predictive outcome modeling after Anterior Cervical Diskectomy &amp;
+          Fusion. Evaluated EM-algorithm and regression-based imputation for
+          missing covariates, then fit logistic regression and SVMs to
+          predict patient outcomes from preoperative features. Co-authored
+          while a research associate at New York Brain &amp; Spine Surgery.
+        </p>
+        <p class="entry-links">
+          <a href="/papers/zimvie-acdf-predictive-modeling.pdf" target="_blank" rel="noopener">PDF ↗</a>
+        </p>
+      </article>
+
+      <article class="entry">
+        <header class="entry-head">
+          <h2 class="entry-title">
+            <a href="/papers/gradient-descent-analysis.pdf" target="_blank" rel="noopener">
+              Gradient Descent Analysis
+            </a>
+          </h2>
+          <span class="mono entry-meta">2023 · with Prof. Arielle Carr · Lehigh</span>
+        </header>
+        <p class="entry-blurb">
+          A short technical writeup on gradient-descent dynamics for a class
+          of optimisation problems we worked through with Prof.&nbsp;Carr.
+          The paper develops the convergence-rate analysis carefully and
+          checks it against numerical experiments.
+        </p>
+        <p class="entry-links">
+          <a href="/papers/gradient-descent-analysis.pdf" target="_blank" rel="noopener">PDF ↗</a>
+        </p>
+      </article>
+
+      <article class="entry">
+        <header class="entry-head">
+          <h2 class="entry-title">
+            <a href="/papers/highlighting-algorithm.pdf" target="_blank" rel="noopener">
+              A Highlighting Algorithm for Document Search
+            </a>
+          </h2>
+          <span class="mono entry-meta">2024 · capstone writeup · Lehigh CSE</span>
+        </header>
+        <p class="entry-blurb">
+          The sentence-level highlight extractor at the heart of my Lehigh
+          capstone search engine. Given a query and a matched sentence,
+          surface the minimal sub-span that explains the match. This is
+          deceptively non-trivial when the query is multi-word, partially
+          stop-worded, or syntactically interleaved with the matched
+          sentence.
+        </p>
+        <p class="entry-links">
+          <a href="/projects/capstone-search">Project page</a>
+          <span aria-hidden="true">·</span>
+          <a href="/papers/highlighting-algorithm.pdf" target="_blank" rel="noopener">PDF ↗</a>
+        </p>
+      </article>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .writing-h1 { margin-top: 0.6rem; }
+  .writing-lead { margin-top: 1.5rem; max-width: 56ch; color: var(--ink-muted); }
+
+  .entry {
+    border-top: 1px solid var(--rule);
+    padding-block: 2rem;
+  }
+  .entry:last-child { border-bottom: 1px solid var(--rule); }
+  .entry-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+  }
+  .entry-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+  }
+  .entry-title a { border: none; }
+  .entry-title a:hover { color: var(--accent); }
+  .entry-meta {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+  }
+  .entry-blurb {
+    color: var(--ink);
+    max-width: 64ch;
+    font-size: 1rem;
+  }
+  .entry-blurb code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--bg-subtle);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+  .entry-links {
+    margin-top: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .entry-links a { color: var(--ink); border-bottom: 1px solid var(--rule-strong); padding-bottom: 1px; }
+  .entry-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+</style>

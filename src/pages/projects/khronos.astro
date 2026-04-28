@@ -1,0 +1,320 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="Khronos"
+  subtitle="A Type II exovisor for WebAssembly: language-level sandbox + exokernel-style capability gating + a multi-tenant-safe data-parallel path. ~5K lines of Rust, denser than every runtime we benchmarked it against."
+  meta="2025 · with Ajax Li · Rust · ~5,000 LOC"
+  links={[
+    { label: 'Paper (PDF)', href: '/papers/khronos.pdf', external: true },
+    { label: 'Source on GitHub', href: 'https://github.com/jca225/webAssembly_Interpreter', external: true },
+  ]}
+  description="Khronos is a multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating. Co-authored by John Abrahams and Ajax Li at the University of Pennsylvania."
+>
+  <h2>Abstract</h2>
+  <p>
+    We present <em>Khronos</em>, a runtime that combines WebAssembly&rsquo;s
+    language-level sandbox with exokernel-style capability gating and
+    scheduler-mediated user-level parallelism. We call this combination a
+    <em>Type II exovisor</em>: an ordinary host-OS process that multiplexes
+    operating-system resources among mutually untrusted WebAssembly tenants
+    through a small, tiered, capability-gated import surface.
+  </p>
+
+  <p>
+    Khronos exposes only ~74 named host entry points to a tenant module, in
+    contrast to the ~300 syscalls reachable from a Linux container, and runs
+    each invocation in a fresh sandboxed store with fuel-based instruction
+    accounting and epoch-based wall-clock deadlines. To support compute-heavy
+    workloads typical of regulated-data flows, Khronos additionally provides a
+    multi-tenant-safe data-parallelism path built on the WebAssembly threads
+    proposal: tenant code uses <code>pthread_create</code> unchanged, and a
+    custom <code>wasi:thread-spawn</code> handler dispatches workers onto a
+    bounded Rayon pool with per-isolate trap containment.
+  </p>
+
+  <p>
+    Across matrix multiply, k&#8209;means, and SVD power-iteration workloads,
+    Khronos achieves up to <strong>6.7× speedup on four cores</strong> while
+    remaining <strong>~0.08&nbsp;MiB per tenant isolate</strong> &mdash; an
+    order of magnitude denser than vanilla Wasmtime and roughly 20×&nbsp;denser
+    than Docker. We argue that this combination &mdash; WebAssembly sandboxing,
+    exokernel-style capabilities, and shared-memory data parallelism &mdash;
+    defines a usable cloud architecture for short, bursty, multi-tenant compute
+    over regulated data.
+  </p>
+
+  <div class="callout">
+    <strong>Why &ldquo;Type II&rdquo; exovisor?</strong> &mdash; A Type I
+    hypervisor virtualises the machine; a container shares the host kernel; a
+    Type&nbsp;II hypervisor runs as a host-OS process. Khronos is the last of
+    those, but instead of virtualising hardware it virtualises the
+    <em>application boundary</em>. Following the exokernel philosophy
+    (Engler et al., 1995), the host exposes <em>primitives</em> rather than
+    fixed OS abstractions, and tenants compose those primitives through their
+    own (compiler-emitted) library OS.
+  </div>
+
+  <h2>The problem</h2>
+  <p>
+    Multi-tenant cloud compute trades off three things: <em>isolation strength</em>
+    (one tenant cannot affect another), <em>tenant density</em> (how many
+    independent guests fit per host), and <em>compute throughput</em> (how much
+    real work each guest gets to do).
+  </p>
+  <ul>
+    <li>
+      <strong>Containers</strong> chose density at the price of isolation
+      &mdash; one shared Linux kernel, ~300-syscall attack surface.
+    </li>
+    <li>
+      <strong>Microvirtual machines</strong> (Firecracker) chose isolation at
+      the price of density &mdash; a full guest-kernel image per tenant.
+    </li>
+    <li>
+      <strong>Browser-style isolate runtimes</strong> (Cloudflare Workers)
+      chose density and isolation at the price of throughput &mdash; ruling out
+      compiled native-style code for languages other than JavaScript.
+    </li>
+  </ul>
+  <p>
+    WebAssembly opens a fourth point. It is structurally a sandbox: bounds-checked
+    linear memory, structured control flow, and only declared imports leave the
+    sandbox. Host code <em>owns</em> the import table &mdash; therefore it owns
+    the abstraction surface. Khronos turns that observation into a system.
+  </p>
+
+  <h2>Architecture</h2>
+  <figure>
+    <img src="/images/khronos/mt-configurations.png" alt="Khronos configurations and speedup over default" />
+    <figcaption>
+      Fig. — Cold-start multi-tenant throughput across three Khronos
+      configurations on <code>sfib(20)</code>. The fast-path
+      <code>InstancePre</code> peaks at ~41K req/s on the same workload as
+      vanilla Wasmtime&rsquo;s 104K, &mdash; a deliberate trade against the
+      multi-tenant safety properties below.
+    </figcaption>
+  </figure>
+
+  <h3>Tiered, capability-gated import surface</h3>
+  <p>
+    Every host-reachable name is classified into one of six tiers. Tiers&nbsp;1,
+    1&prime;, and 2 are universal &mdash; any C++ runtime needs them to start
+    up. Tiers&nbsp;2&prime; (WASI-NN inference), the intrinsic tier
+    (data-parallel <code>MAP</code>, <code>REDUCTION</code>), and Tier&nbsp;3
+    (filesystem and networking syscalls) are gated per-tenant by a
+    <code>CapabilitySet</code> flag, checked at module <em>instantiation</em>
+    time &mdash; before any tenant code runs.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Tier</th><th>Examples</th><th>Count</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1 (lang. runtime)</td><td><code>_Znwm</code>, <code>__cxa_throw</code></td><td>8</td></tr>
+      <tr><td>1&prime; (WASI preview1)</td><td><code>proc_exit</code>, <code>fd_write</code></td><td>13</td></tr>
+      <tr><td>2 (safe builtins)</td><td><code>memcpy</code>, <code>sin</code>, <code>pow</code></td><td>~25</td></tr>
+      <tr><td>2&prime; (WASI-NN)</td><td><code>wasi_nn_load</code>, <code>wasi_nn_compute</code></td><td>5</td></tr>
+      <tr><td>Intrinsic</td><td><code>MAP</code>, <code>REDUCTION</code>, <code>CILK_REDUCE_*</code></td><td>4</td></tr>
+      <tr><td>3 (cap-gated)</td><td><code>__syscall_openat</code>, <code>__syscall_socket</code></td><td>~20</td></tr>
+      <tr><td><strong>Total surface</strong></td><td></td><td><strong>~74</strong></td></tr>
+    </tbody>
+  </table>
+  <p>
+    For comparison: a Linux container&rsquo;s default seccomp allowlist exposes
+    ~300 syscalls; a bare Firecracker microVM exposes ~300+ on top of ~40 host
+    syscalls. <strong>A smaller surface is a smaller correctness-proof target.</strong>
+    The implementation cost of capability gating is roughly 200&nbsp;LOC for the
+    resolver plus 100 for the gate check.
+  </p>
+
+  <h3>Multi-tenant isolation: per-Runtime engine, per-request store</h3>
+  <p>
+    WebAssembly&rsquo;s isolation primitive is the <code>Store</code>. Two
+    stores in the same process share no mutable wasm-level state. Khronos
+    constructs one <code>Engine</code> per <code>Runtime</code> (process) and
+    one <code>Store</code> per request. The <code>Engine</code> is shared
+    across tenants by default in single-threaded mode, but in parallel mode
+    each invocation gets its own <code>Engine</code> &mdash; so bumping the
+    epoch to abort one tenant&rsquo;s workers cannot affect any other tenant.
+  </p>
+  <p>
+    Two resource counters bound the work: a <strong>fuel counter</strong>
+    (instruction-count quota) decremented on every basic-block back-edge, and
+    a <strong>wall-clock deadline</strong> enforced through epoch interruption,
+    where a background ticker bumps the engine&rsquo;s epoch every millisecond.
+    A <code>Store</code> whose deadline has passed traps on the next loop
+    back-edge or function entry.
+  </p>
+
+  <h2>Data parallelism, multi-tenant safe</h2>
+  <p>
+    Wasmtime&rsquo;s <code>Store</code> is <code>!Sync</code>: it cannot be
+    shared across threads. Three ways exist to reconcile this with parallel
+    guest workers; Khronos picked <em>wasm-threads with shared memory</em>:
+    each worker gets its own <code>Store</code>, but they all bind the same
+    <code>SharedMemory</code>. There is no copy. The guest&rsquo;s
+    <code>pthread_create</code> does the work-splitting; the host provides
+    only the spawn protocol.
+  </p>
+  <p>
+    The upstream <code>wasmtime-wasi-threads</code> handler calls
+    <code>std::process::exit(1)</code> on any worker trap or panic &mdash; for
+    a multi-tenant runtime, this is fatal: one tenant&rsquo;s malformed binary
+    would take down every other tenant. Khronos therefore registers its own
+    <code>wasi:thread-spawn</code> handler with three properties:
+  </p>
+  <ol>
+    <li>
+      <strong>No process exit on worker errors.</strong> Every spawned worker
+      runs inside <code>std::panic::catch_unwind</code>. A trap or panic
+      produces a caught <code>Err</code>; we set the per-isolate
+      <code>aborted: AtomicBool</code>, stash the trap message, and bump the
+      engine&rsquo;s epoch deadline through to overshoot any in-flight
+      worker. The host process keeps running; other tenants on other isolates
+      have their own engines and are entirely unaffected.
+    </li>
+    <li>
+      <strong>Workers run on Rayon&rsquo;s pool.</strong> Bare
+      <code>std::thread::spawn</code> would let <em>N</em> tenants ×
+      <em>M</em> workers each blow past the host&rsquo;s thread budget.
+      Rayon&rsquo;s global pool has <code>rayon::current_num_threads()</code>
+      workers; fan-out across all isolates is bounded by that ceiling.
+    </li>
+    <li>
+      <strong>Per-isolate worker-store pool.</strong> The first
+      &le;&nbsp;<code>N<sub>threads</sub></code> spawns of an isolate&rsquo;s
+      lifetime build a worker slot (Store + Instance + cached
+      <code>wasi_thread_start</code> TypedFunc + per-store
+      <code>__stack_pointer</code> global) &mdash; the cold cost. Every
+      subsequent spawn checks out an existing slot, resets per-call state
+      (stack pointer reset to 1&nbsp;MiB, fuel refilled, epoch deadline
+      bumped), calls <code>wasi_thread_start</code>, and returns the slot to
+      the pool. Cold spawn costs hundreds of microseconds; warm spawn costs a
+      few.
+    </li>
+  </ol>
+
+  <h2>Evaluation</h2>
+  <h3>Tenant density</h3>
+  <figure>
+    <img src="/images/khronos/memory-density.png" alt="Per-tenant memory footprint after instantiating N isolates" />
+    <figcaption>
+      Fig. — Per-tenant resident-set size after instantiating <em>N</em>
+      isolates. Khronos at ~0.08&nbsp;MiB per isolate is roughly 3–30× denser
+      than competing runtimes.
+    </figcaption>
+  </figure>
+  <p>
+    At <em>N</em>&nbsp;=&nbsp;200 live isolates, the marginal cost per isolate
+    is:
+  </p>
+  <table>
+    <thead><tr><th>Runtime</th><th>Per-isolate cost</th></tr></thead>
+    <tbody>
+      <tr><td>khronos-rs</td><td><strong>0.08&nbsp;MiB</strong></td></tr>
+      <tr><td>Wasmtime (vanilla)</td><td>0.27&nbsp;MiB</td></tr>
+      <tr><td>Docker</td><td>~1.40&nbsp;MiB</td></tr>
+      <tr><td>wazero</td><td>2.22&nbsp;MiB</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Khronos is approximately 3× denser than vanilla Wasmtime and roughly
+    18× denser than Docker. The Khronos number translates to
+    ~200,000&nbsp;tenants per 16&nbsp;GiB host, against Docker&rsquo;s
+    ~11,500 on the same VM.
+  </p>
+
+  <h3>Multi-tenant throughput</h3>
+  <figure>
+    <img src="/images/khronos/multi-tenant-throughput.png" alt="Multi-tenant burst-throughput as concurrent tenant count increases" />
+    <figcaption>
+      Fig. — Aggregate requests/sec when <em>N</em> concurrent threads each
+      fire one <code>sfib(20)</code> against their own private isolate.
+    </figcaption>
+  </figure>
+  <p>
+    On the 4-vCPU box, peak throughput is ~38K req/s for Khronos at
+    <em>N</em>=16, vs. Wasmtime&rsquo;s ~104K at <em>N</em>=512.
+    Khronos&rsquo;s <code>invoke</code> path has per-call overhead &mdash;
+    capability checks, intrinsic linker registration, fuel and epoch reset
+    &mdash; that does not amortise on a one-call-per-isolate burst test.
+    Khronos exposes two opt-in configurations (pooling allocator + fast-path
+    <code>InstancePre</code>) that close most of the gap.
+  </p>
+
+  <h3>Parallel intrinsics</h3>
+  <figure>
+    <img src="/images/khronos/matmul-seq-vs-par.png" alt="Dense N×N matrix multiply: sequential vs wasm-threads on four cores" />
+    <figcaption>
+      Fig. — Dense <em>N</em>&times;<em>N</em> double-precision matrix
+      multiply. Sequential vs. wasm-threads on four cores. Speedup grows with
+      <em>N</em>; <strong>6.7×</strong> at <em>N</em>&nbsp;=&nbsp;128.
+    </figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>N</th><th>seq</th><th>wasm-threads</th><th>speedup</th></tr></thead>
+    <tbody>
+      <tr><td>32</td><td>6.7&nbsp;ms</td><td>1.3&nbsp;ms</td><td><strong>5.2×</strong></td></tr>
+      <tr><td>64</td><td>34.8&nbsp;ms</td><td>5.8&nbsp;ms</td><td><strong>6.0×</strong></td></tr>
+      <tr><td>96</td><td>115.7&nbsp;ms</td><td>17.5&nbsp;ms</td><td><strong>6.6×</strong></td></tr>
+      <tr><td>128</td><td>276.0&nbsp;ms</td><td>41.2&nbsp;ms</td><td><strong>6.7×</strong></td></tr>
+    </tbody>
+  </table>
+  <p>
+    The 6.7× at <em>N</em>&nbsp;=&nbsp;128 exceeds the 4× implied by four
+    workers because per-thread accumulators stay hot in L1 and the sequential
+    build cannot benefit from the same locality.
+  </p>
+
+  <figure>
+    <img src="/images/khronos/kmeans-seq-vs-par.png" alt="Lloyd-iteration k-means: sequential vs wasm-threads" />
+    <figcaption>Fig. — Lloyd-iteration k-means (k=4, 3 iterations); 4× at N=10,000.</figcaption>
+  </figure>
+
+  <h2>The honest limitations</h2>
+  <ul>
+    <li>
+      <strong>Per-call invocation overhead.</strong> The 38K req/s peak vs.
+      Wasmtime&rsquo;s 104K is largely attributable to per-call linker
+      registration of intrinsics and per-call fuel/epoch reset. Both can be
+      amortised across calls.
+    </li>
+    <li>
+      <strong>Fixed worker count.</strong> Khronos hardcodes
+      N<sub>threads</sub>=4 in the guest wrapper to match the typical 4-vCPU
+      deployment. An adaptive thread-count or a runtime-supplied variable is
+      straightforward future work.
+    </li>
+    <li>
+      <strong>Fork-join only.</strong> Workers atomic-waiting on each other
+      can deadlock if Rayon&rsquo;s pool fills up. Cilk-shaped MAP/REDUCTION
+      workloads do not trigger this; barrier-style workloads would.
+    </li>
+    <li>
+      <strong>Side-channel posture.</strong> Khronos relies on WebAssembly&rsquo;s
+      structural isolation and adds wall-clock limits to bound timing-channel
+      signal &mdash; it does not eliminate microarchitectural side channels.
+      Coordinated host-OS mitigations would be required.
+    </li>
+  </ul>
+
+  <h2>Implementation</h2>
+  <p>
+    Khronos is implemented in Rust (~5,000 lines), split across three crates
+    (<code>runtime</code>, <code>server</code>, <code>cli</code>). The HTTP
+    server uses <code>axum</code> with SQLite for tenant metadata and exposes
+    admin endpoints (tenant + API key creation), tenant endpoints (module
+    upload, invoke, SSE event stream), and a Prometheus
+    <code>/metrics</code> endpoint. The full benchmark harness lives in
+    <code>benchmark/</code> and reproduces every plot in the paper with a
+    single shell command.
+  </p>
+
+  <p class="muted">
+    Co-authored with <strong>Ajax Li</strong> (UPenn). Thank you to the
+    architecture group at Penn for early feedback.
+  </p>
+</Project>

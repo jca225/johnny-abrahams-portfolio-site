@@ -1,0 +1,62 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="Clinical Therapy Chatbot"
+  subtitle="A production-style therapy chatbot at New York Brain & Spine Surgery, blending rule-based clinical workflows with LLM-generated responses across multiple mental-health conditions."
+  meta="May 2025 – Mar 2026 · LLaMA · FastAPI · multi-agent"
+  description="Production therapy chatbot built at New York Brain & Spine Surgery using LLaMA + FastAPI."
+>
+  <p>
+    A configurable multi-agent backend for a clinical setting. The constraint
+    is the interesting part: in healthcare, an LLM&rsquo;s conversational
+    flexibility is an asset only if the surrounding system makes it safe.
+    Pure prompt engineering does not get you there. Pure rule-based
+    workflows get you something that doesn&rsquo;t feel like talking to a
+    person.
+  </p>
+  <p>
+    The system I built combines:
+  </p>
+  <ul>
+    <li>
+      <strong>Rule-based clinical workflows</strong> for the moments where
+      determinism matters &mdash; intake, screening, escalation, safety
+      keywords. These never call an LLM.
+    </li>
+    <li>
+      <strong>LLM-generated responses</strong> for the connective tissue
+      &mdash; reflection, paraphrase, gentle prompting &mdash; behind a
+      structured prompt template that constrains tone and topic.
+    </li>
+    <li>
+      <strong>A multi-agent layer</strong> that switches between
+      condition-specific personas (each with its own clinical workflow set)
+      based on session state.
+    </li>
+  </ul>
+  <p>
+    Implementation was FastAPI on the API side, LLaMA for generation, and a
+    small state machine on top managing session memory and escalation paths.
+    The system was built so that the clinical team could iterate on prompts
+    and workflows without touching the backend.
+  </p>
+
+  <h2>What I owned</h2>
+  <ul>
+    <li>Backend API + application infrastructure (FastAPI + state management).</li>
+    <li>The multi-agent dispatcher and condition-specific persona configs.</li>
+    <li>Real-time conversational flow + safe state management between turns.</li>
+    <li>Rapid prompt-iteration tooling for the clinical team.</li>
+  </ul>
+
+  <p class="muted">
+    Engagement ran May 2025 through March 2026.
+  </p>
+
+  <p class="muted">
+    Specifics are limited here for obvious clinical-confidentiality reasons.
+    Happy to discuss in conversation.
+  </p>
+</Project>
