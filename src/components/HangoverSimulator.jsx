@@ -256,48 +256,50 @@ function StatCard({ label, value, sub, warn, good }) {
 
 const MAX_PER_SLOT = 4;
 
+const DOUBLE_TAP_MS = 280;
+
 function DrinkGrid({ drinks, setDrinks, drinkType }) {
   const slots = [];
   for (let h = 16; h <= 29.5; h += 0.5) slots.push(h);
 
-  // Tap = toggle (empty → 1, anything → 0). Long-press / shift-click = +1 (stack up to 4).
-  const longPressTimer = useRef(null);
-  const longPressFired = useRef(false);
+  // Tap = toggle (empty ↔ 1). Double-tap (or shift-click on desktop) = stack +1 from
+  // the slot's pre-tap state, so a single quick double-tap on a 1-drink slot goes to 2,
+  // not back to 0.
+  const lastTapRef = useRef(null);
 
-  const setCount = (hour, fn) => {
-    const here = drinks.filter(d => d.hour === hour);
+  const writeSlot = (hour, nextHere) => {
     const others = drinks.filter(d => d.hour !== hour);
-    const next = fn(here);
-    setDrinks([...others, ...next].sort((a, b) => a.hour - b.hour));
+    setDrinks([...others, ...nextHere].sort((a, b) => a.hour - b.hour));
   };
 
-  const stackPlusOne = (hour) => {
-    setCount(hour, (here) => here.length >= MAX_PER_SLOT ? here : [...here, { hour, type: drinkType }]);
+  const stackOnto = (hour, base) => {
+    if (base.length >= MAX_PER_SLOT) return base;
+    return [...base, { hour, type: drinkType }];
   };
 
   const handleClick = (hour, evt) => {
-    if (longPressFired.current) {
-      longPressFired.current = false;
-      return;
-    }
+    const here = drinks.filter(d => d.hour === hour);
+
+    // Desktop power-user shortcut: shift- or alt-click stacks one drink onto the slot.
     if (evt.shiftKey || evt.altKey) {
-      stackPlusOne(hour);
+      writeSlot(hour, stackOnto(hour, here));
       return;
     }
-    setCount(hour, (here) => here.length === 0 ? [{ hour, type: drinkType }] : []);
-  };
 
-  const handleTouchStart = (hour) => {
-    longPressFired.current = false;
-    clearTimeout(longPressTimer.current);
-    longPressTimer.current = setTimeout(() => {
-      longPressFired.current = true;
-      stackPlusOne(hour);
-      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20);
-    }, 420);
-  };
+    const now = Date.now();
+    const last = lastTapRef.current;
 
-  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
+    // Double-tap on the same slot → undo the toggle and stack +1 instead.
+    if (last && last.hour === hour && (now - last.time) < DOUBLE_TAP_MS) {
+      lastTapRef.current = null;
+      writeSlot(hour, stackOnto(hour, last.prevHere));
+      return;
+    }
+
+    // Single tap → toggle (record pre-state so a follow-up tap can become a double-tap).
+    lastTapRef.current = { hour, prevHere: here, time: now };
+    writeSlot(hour, here.length === 0 ? [{ hour, type: drinkType }] : []);
+  };
 
   return (
     <div>
@@ -313,11 +315,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
             <button
               key={h}
               onClick={(e) => handleClick(h, e)}
-              onTouchStart={() => handleTouchStart(h)}
-              onTouchEnd={handleTouchEnd}
-              onTouchMove={handleTouchEnd}
-              onTouchCancel={handleTouchEnd}
-              title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""}${count > 0 ? " (tap to clear, hold to stack)" : ""}`}
+              title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""} (tap to toggle · double-tap to stack)`}
               className="hg-slot"
               style={{
                 borderColor: active ? "#37352f" : isMid ? "#c0bfbb" : is2am ? "#e0a0a0" : "#e9e9e7",
@@ -337,7 +335,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
       <div className="hg-grid-legend">
         <span>▏midnight</span>
         <span style={{ color: "#e0a0a0" }}>▏2am — diminishing returns</span>
-        <span className="hg-grid-help">tap to toggle · hold to stack · max 4 per slot</span>
+        <span className="hg-grid-help">tap to toggle · double-tap to stack · max 4 per slot</span>
       </div>
     </div>
   );
@@ -438,6 +436,7 @@ export default function HangoverNotion() {
           font-family: 'system-ui', sans-serif; cursor: pointer; transition: all 0.1s;
           display: flex; align-items: center; justify-content: center;
           padding: 0; -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
         .hg-slot-badge {
           position: absolute; top: -6px; right: -6px;
