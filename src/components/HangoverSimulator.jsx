@@ -24,7 +24,6 @@ function Vd(weightKg, sex) { return sex === "male" ? 0.68 * weightKg : 0.55 * we
 // at low BAC the rate falls off linearly through 0.
 const KM_BAC = 0.005;                                      // g/dL
 function vmaxFor(weightKg) {
-  // Reported population Vmax 0.012 – 0.020 g/dL/hr; use 0.017 with mild weight scaling.
   return 0.017 + (weightKg - 70) * 0.00005;
 }
 function eliminationDelta(BAC, weightKg, vmaxMult) {
@@ -33,7 +32,6 @@ function eliminationDelta(BAC, weightKg, vmaxMult) {
   return Math.min(BAC, (v * BAC / (KM_BAC + BAC)) * DT);
 }
 
-// Gamma-shaped absorption — area under curve = etoh grams.
 function absorptionRate(t, drinkType, food) {
   const { peakHr, etoh } = DRINK_TYPES[drinkType];
   const peak = food ? peakHr * 1.8 : peakHr;
@@ -54,9 +52,7 @@ function formatHour(h) {
 
 function simulate(params) {
   const { weightKg, sex, bedtimeHr, food, drinks, substance, running } = params;
-
   const Vd_val = Vd(weightKg, sex);
-  // Acetaldehyde clearance (population mean ALDH2 activity).
   const k_acald = 0.28;
 
   const substanceEffects = {
@@ -79,20 +75,14 @@ function simulate(params) {
         totalAbsorption += absorptionRate(t - d.hour, d.type, food) / (Vd_val * 10);
       }
     });
-
     const elim = eliminationDelta(BAC, weightKg, subst.vmaxMult);
     BAC = Math.max(0, BAC + totalAbsorption * DT - elim);
-
-    // Acetaldehyde balance: produced from elimination flux, cleared first-order.
     const acaldProduction = (elim / DT) * 0.15 * subst.acaldMult;
     AcAld = Math.max(0, AcAld + (acaldProduction - k_acald * AcAld) * DT);
-
     const gamma = Math.min(0.99, 0.3 + 0.7 * (BAC / 0.15));
     maxBAC = Math.max(maxBAC, BAC);
     maxAcAld = Math.max(maxAcAld, AcAld);
-
     if (Math.abs(t - bedtimeHr) < DT) { BACatSleepOnset = BAC; AcAlDateSleepOnset = AcAld; }
-
     if (Math.round(t * 60) % 6 === 0) {
       timeline.push({
         t: Math.round(t * 10) / 10,
@@ -108,17 +98,11 @@ function simulate(params) {
 
   const bacOnset = BACatSleepOnset ?? 0;
   const acaldOnset = AcAlDateSleepOnset ?? 0;
-
-  // ── Hangover composition ──────────────────────────────────────────────────
-  // 1. SWS suppression (slow-wave, second half of the night, dominant in late-night BAC presence)
   const SWS_disruption = sigmoid(bacOnset, 0.04, 40);
-
-  // 2. REM suppression — first half driven by BAC, second-half rebound is fragmenting
   const BACdropRate = bacOnset / SLEEP_HOURS;
   const reboundFrag = Math.min(1, BACdropRate / 0.02);
   const REM_disruption = 0.4 * sigmoid(bacOnset, 0.03, 35) + 0.6 * reboundFrag;
 
-  // 3. Acetaldehyde + congener inflammatory load
   const totalGrams = drinks.reduce((s, d) => s + DRINK_TYPES[d.type].etoh, 0);
   const meanCongeners = drinks.length === 0
     ? 0
@@ -126,14 +110,9 @@ function simulate(params) {
   const acaldComponent = Math.min(1, acaldOnset / 0.05);
   const congenerComponent = meanCongeners * Math.min(1, totalGrams / 60);
   const inflammatoryScore = 0.65 * acaldComponent + 0.35 * congenerComponent;
-
-  // 4. Dehydration — alcohol is a vasopressin antagonist; load grows ~linearly with grams
-  const dehydrationScore = Math.min(1, totalGrams / 90);   // 90g ≈ 6.4 standard drinks
-
-  // 5. Sleep fragmentation — ramp-up of BAC clearance during sleep means microarousals
+  const dehydrationScore = Math.min(1, totalGrams / 90);
   const fragmentationScore = Math.min(1, BACdropRate / 0.025);
 
-  // 6. Compose. Five terms, each weighted equally (0.20 × 5 = 1.0). Scale to 0–10.
   const runningDiscount = running ? 0.72 : 1.0;
   const rawHangover = (
     0.20 * SWS_disruption +
@@ -144,19 +123,15 @@ function simulate(params) {
   ) * 10;
   const hangoverScore = Math.min(10, rawHangover * runningDiscount);
 
-  // ── Sleep architecture profile ────────────────────────────────────────────
   const sleepData = [];
   for (let i = 0; i < SLEEP_HOURS; i += 0.25) {
     const frac = i / SLEEP_HOURS;
     const isFirstHalf = frac < 0.5;
     const normalSWS = frac < 0.5 ? Math.sin(frac * Math.PI * 2) * 0.8 : 0.1;
     const normalREM = frac > 0.5 ? Math.sin((frac - 0.5) * Math.PI * 2) * 0.9 : 0.05;
-    // Alcohol increases SWS modestly in the first ~third (anesthetic-like), then
-    // dramatically suppresses SWS and fragments sleep in the back half.
     const swsBoost = isFirstHalf ? sigmoid(bacOnset, 0.04, 35) * 0.25 : 0;
     const swsLoss  = isFirstHalf ? 0 : SWS_disruption * (frac - 0.5) * 2;
     const actualSWS = normalSWS * (1 + swsBoost - swsLoss);
-    // REM is suppressed in first half; rebounds (fragmented) in second half.
     const remLoss   = isFirstHalf ? sigmoid(bacOnset, 0.03, 35) : 0;
     const remRebound= isFirstHalf ? 0 : reboundFrag * 0.3;
     const actualREM = normalREM * (1 - remLoss) * (1 - remRebound * (frac - 0.5));
@@ -212,14 +187,10 @@ function Section({ title, icon, children, defaultOpen = true }) {
 
 function PropertyRow({ label, children, hint }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", minHeight: 36, gap: 0, borderRadius: 4, padding: "2px 4px", margin: "1px -4px" }}
-      onMouseEnter={e => e.currentTarget.style.background = "#f1f1ef"}
-      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-      <div style={{ width: 180, flexShrink: 0, fontSize: 13, color: "#787774", display: "flex", alignItems: "center", gap: 6 }}>
-        {label}
-      </div>
-      <div style={{ flex: 1, fontSize: 13, color: "#37352f" }}>{children}</div>
-      {hint && <div style={{ fontSize: 11, color: "#c0bfbb", marginLeft: 8 }}>{hint}</div>}
+    <div className="hg-prop-row">
+      <div className="hg-prop-label">{label}</div>
+      <div className="hg-prop-control">{children}</div>
+      {hint && <div className="hg-prop-hint">{hint}</div>}
     </div>
   );
 }
@@ -227,13 +198,14 @@ function PropertyRow({ label, children, hint }) {
 function Tag({ children, active, onClick, color = "#37352f", bg = "#f1f1ef", activeBg = "#e3e3e0" }) {
   return (
     <button onClick={onClick} style={{
-      padding: "3px 10px", borderRadius: 4, border: "none",
+      padding: "5px 12px", borderRadius: 4, border: "none",
       background: active ? activeBg : bg,
       color: active ? color : "#9b9b97",
-      fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+      fontSize: 13, cursor: "pointer", fontFamily: "inherit",
       fontWeight: active ? 500 : 400,
       transition: "all 0.1s",
       outline: active ? `1.5px solid ${color}40` : "none",
+      whiteSpace: "nowrap",
     }}>
       {children}
     </button>
@@ -245,8 +217,8 @@ function SliderProp({ label, value, min, max, step = 1, onChange, display, hint 
     <PropertyRow label={label} hint={hint}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(+e.target.value)}
-          style={{ flex: 1, accentColor: "#37352f", height: 3, cursor: "pointer" }} />
-        <span style={{ fontSize: 12, color: "#37352f", minWidth: 60, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+          style={{ flex: 1, accentColor: "#37352f", height: 3, cursor: "pointer", minWidth: 0 }} />
+        <span style={{ fontSize: 13, color: "#37352f", minWidth: 70, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
           {display ?? value}
         </span>
       </div>
@@ -257,11 +229,12 @@ function SliderProp({ label, value, min, max, step = 1, onChange, display, hint 
 function Toggle({ value, onChange }) {
   return (
     <button onClick={() => onChange(!value)} style={{
-      width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
+      width: 40, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
       background: value ? "#37352f" : "#e0dfdd", position: "relative", transition: "background 0.2s",
+      flexShrink: 0,
     }}>
       <div style={{
-        width: 14, height: 14, borderRadius: 7, background: "#fff",
+        width: 18, height: 18, borderRadius: 9, background: "#fff",
         position: "absolute", top: 3, left: value ? 19 : 3, transition: "left 0.2s",
         boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
       }} />
@@ -272,10 +245,7 @@ function Toggle({ value, onChange }) {
 function StatCard({ label, value, sub, warn, good }) {
   const color = warn ? "#c04040" : good ? "#3d9970" : "#37352f";
   return (
-    <div style={{
-      padding: "14px 16px", background: "#fbfbfa", border: "1px solid #e9e9e7",
-      borderRadius: 8, flex: 1, minWidth: 120,
-    }}>
+    <div className="hg-stat-card">
       <div style={{ fontSize: 11, color: "#9b9b97", marginBottom: 6, letterSpacing: "0.02em" }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 600, color, letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: "#b0aeaa", marginTop: 4 }}>{sub}</div>}
@@ -289,12 +259,10 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
   const slots = [];
   for (let h = 16; h <= 29.5; h += 0.5) slots.push(h);
 
-  // Click cycles count up to MAX_PER_SLOT, then back to 0.
   const cycle = (hour, evt) => {
     const here = drinks.filter(d => d.hour === hour);
     const others = drinks.filter(d => d.hour !== hour);
     if (evt.shiftKey || evt.altKey) {
-      // shift/alt-click: remove one
       if (here.length === 0) return;
       const next = here.slice(0, -1);
       setDrinks([...others, ...next].sort((a, b) => a.hour - b.hour));
@@ -310,7 +278,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
 
   return (
     <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      <div className="hg-drink-grid">
         {slots.map(h => {
           const here = drinks.filter(d => d.hour === h);
           const count = here.length;
@@ -323,38 +291,26 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
               key={h}
               onClick={(e) => cycle(h, e)}
               title={`${formatHour(h)} — ${count} drink${count !== 1 ? "s" : ""}${count > 0 ? " (shift-click to remove)" : ""}`}
+              className="hg-slot"
               style={{
-                position: "relative",
-                width: 38, height: 38, borderRadius: 6, border: "1px solid",
                 borderColor: active ? "#37352f" : isMid ? "#c0bfbb" : is2am ? "#e0a0a0" : "#e9e9e7",
                 background: active ? "#37352f" : "#fbfbfa",
                 color: active ? "#fff" : isMid ? "#9b9b97" : is2am ? "#c07070" : "#c0bfbb",
-                cursor: "pointer", fontSize: active ? 16 : 9,
-                fontFamily: "inherit", transition: "all 0.1s",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: active ? 18 : 10,
               }}
             >
               {active ? DRINK_TYPES[topType].emoji : formatHour(h).replace(":00","").replace("PM","p").replace("AM","a")}
               {count > 1 && (
-                <span style={{
-                  position: "absolute", top: -6, right: -6,
-                  background: "#c04040", color: "#fff",
-                  fontSize: 10, fontWeight: 600,
-                  borderRadius: 9, width: 18, height: 18,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'system-ui', sans-serif",
-                  border: "1.5px solid #fbfbfa",
-                  fontVariantNumeric: "tabular-nums",
-                }}>×{count}</span>
+                <span className="hg-slot-badge">×{count}</span>
               )}
             </button>
           );
         })}
       </div>
-      <div style={{ display: "flex", gap: 16, marginTop: 10, fontSize: 11, color: "#c0bfbb", flexWrap: "wrap" }}>
+      <div className="hg-grid-legend">
         <span>▏midnight</span>
         <span style={{ color: "#e0a0a0" }}>▏2am — diminishing returns</span>
-        <span style={{ marginLeft: "auto" }}>click to add · shift-click to remove</span>
+        <span className="hg-grid-help">tap to add · shift-click to remove · max 4 per slot</span>
       </div>
     </div>
   );
@@ -378,6 +334,7 @@ const ChartTooltip = ({ active, payload, label }) => {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function HangoverNotion() {
+  const [view, setView] = useState("inputs");          // 'inputs' | 'results'
   const [weightKg, setWeightKg] = useState(75);
   const [sex, setSex] = useState("male");
   const [bedtimeHr, setBedtimeHr] = useState(23);
@@ -397,75 +354,173 @@ export default function HangoverNotion() {
 
   const meta = hangoverMeta(result.hangoverScore);
 
+  const showResults = () => {
+    setView("results");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const editInputs = () => {
+    setView("inputs");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <div style={{
-      minHeight: "100vh", background: "#fff", color: "#37352f",
-      fontFamily: "'Georgia', 'Charter', serif",
-    }}>
+    <div className="hg-page">
       <style>{`
+        /* ── Layout shell ─────────────────────────────────────────────────── */
+        .hg-page {
+          background: #fff;
+          color: #37352f;
+          font-family: 'Charter', 'Georgia', serif;
+        }
+        .hg-content {
+          max-width: 900px;
+          margin: 0 auto;
+          padding: clamp(28px, 6vw, 60px) clamp(20px, 5vw, 96px) clamp(40px, 8vw, 60px);
+        }
+
+        /* ── Header ──────────────────────────────────────────────────────── */
+        .hg-eyebrow { font-family: 'system-ui', sans-serif; font-size: 12px; color: #9b9b97; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
+        .hg-title { font-size: clamp(28px, 6vw, 40px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; color: #37352f; margin: 0 0 10px; }
+        .hg-blurb { font-size: clamp(14px, 2.5vw, 16px); color: #787774; line-height: 1.6; max-width: 580px; margin: 0 0 28px; }
+
+        /* ── Step indicator ──────────────────────────────────────────────── */
+        .hg-steps { display: flex; gap: 8px; align-items: center; margin-bottom: 24px; font-family: 'system-ui', sans-serif; font-size: 12px; color: #9b9b97; flex-wrap: wrap; }
+        .hg-step { display: inline-flex; align-items: center; gap: 6px; }
+        .hg-step .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #c0bfbb; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: #c0bfbb; font-weight: 600; }
+        .hg-step.active .dot { border-color: #37352f; background: #37352f; color: #fff; }
+        .hg-step.done .dot { border-color: #3d9970; background: #3d9970; color: #fff; }
+        .hg-step.active .hg-step-label { color: #37352f; }
+        .hg-step-sep { color: #d5d4cd; }
+
+        /* ── Property rows ──────────────────────────────────────────────── */
+        .hg-prop-row {
+          display: flex; align-items: center; min-height: 40px; gap: 14px;
+          border-radius: 4px; padding: 4px 6px; margin: 1px -6px;
+          flex-wrap: wrap;
+        }
+        .hg-prop-row:hover { background: #f1f1ef; }
+        .hg-prop-label { width: 170px; flex-shrink: 0; font-size: 13px; color: #787774; font-family: 'system-ui', sans-serif; }
+        .hg-prop-control { flex: 1; min-width: 200px; font-size: 13px; color: #37352f; font-family: 'system-ui', sans-serif; }
+        .hg-prop-hint { font-size: 11px; color: #c0bfbb; font-family: 'system-ui', sans-serif; }
+        @media (max-width: 600px) {
+          .hg-prop-label { width: 100%; margin-bottom: 2px; font-size: 12px; }
+          .hg-prop-control { width: 100%; flex: 1 0 100%; min-width: 0; }
+          .hg-prop-hint { width: 100%; margin-top: 2px; }
+        }
+
+        /* ── Sliders ─────────────────────────────────────────────────────── */
         input[type=range] { -webkit-appearance: none; appearance: none; background: #e9e9e7; border-radius: 2px; height: 3px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 7px; background: #37352f; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 9px; background: #37352f; cursor: pointer; }
+        input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 9px; background: #37352f; cursor: pointer; border: none; }
         ::selection { background: #d4e8ff; }
+
+        /* ── Drink grid ──────────────────────────────────────────────────── */
+        .hg-drink-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 5px; }
+        .hg-slot {
+          position: relative; aspect-ratio: 1; border-radius: 6px; border: 1px solid;
+          font-family: 'system-ui', sans-serif; cursor: pointer; transition: all 0.1s;
+          display: flex; align-items: center; justify-content: center;
+          padding: 0; -webkit-tap-highlight-color: transparent;
+        }
+        .hg-slot-badge {
+          position: absolute; top: -6px; right: -6px;
+          background: #c04040; color: #fff;
+          font-size: 10px; font-weight: 600;
+          border-radius: 9px; min-width: 18px; height: 18px; padding: 0 4px;
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'system-ui', sans-serif;
+          border: 1.5px solid #fbfbfa;
+          font-variant-numeric: tabular-nums;
+        }
+        .hg-grid-legend { display: flex; gap: 14px; margin-top: 12px; font-size: 11px; color: #c0bfbb; flex-wrap: wrap; font-family: 'system-ui', sans-serif; }
+        .hg-grid-help { margin-left: auto; }
+        @media (max-width: 600px) { .hg-grid-help { margin-left: 0; width: 100%; } }
+
+        /* ── Stat cards ──────────────────────────────────────────────────── */
+        .hg-stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 36px; }
+        @media (max-width: 600px) { .hg-stat-row { grid-template-columns: repeat(2, 1fr); } }
+        .hg-stat-card {
+          padding: 14px 16px; background: #fbfbfa; border: 1px solid #e9e9e7;
+          border-radius: 8px; font-family: 'system-ui', sans-serif;
+        }
+
+        /* ── Score callout ──────────────────────────────────────────────── */
+        .hg-score-callout {
+          display: flex; align-items: center; gap: 16px;
+          border-radius: 12px; padding: 16px 20px; margin-bottom: 32px;
+          flex-wrap: wrap;
+        }
+
+        /* ── Tabs (chart selector) ──────────────────────────────────────── */
+        .hg-tabs { display: flex; gap: 0; border-bottom: 1px solid #e9e9e7; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .hg-tab {
+          background: none; border: none; padding: 8px 14px; font-size: 13px;
+          cursor: pointer; font-family: 'system-ui', sans-serif; margin-bottom: -1px;
+          transition: all 0.15s; white-space: nowrap; color: #9b9b97;
+          border-bottom: 2px solid transparent;
+        }
+        .hg-tab.active { color: #37352f; border-bottom-color: #37352f; }
+
+        /* ── Primary CTA button ─────────────────────────────────────────── */
+        .hg-cta {
+          width: 100%; padding: 18px; margin-top: 32px;
+          background: #37352f; color: #fff;
+          border: none; border-radius: 10px;
+          font-family: 'system-ui', sans-serif; font-size: 16px; font-weight: 600;
+          letter-spacing: -0.01em; cursor: pointer; transition: transform 0.1s, background 0.15s;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .hg-cta:hover { background: #1a1a19; }
+        .hg-cta:active { transform: scale(0.99); }
+        .hg-cta-secondary {
+          background: none; color: #787774; border: 1px solid #e9e9e7;
+          font-weight: 500; padding: 12px;
+        }
+        .hg-cta-secondary:hover { background: #fbfbfa; color: #37352f; }
+
+        /* ── Misc ─────────────────────────────────────────────────────── */
+        .hg-section-title { font-family: 'system-ui', sans-serif; font-size: 13px; font-weight: 600; color: #37352f; letter-spacing: -0.01em; margin: 32px 0 8px; }
+        .hg-warn-callout {
+          font-family: 'system-ui', sans-serif; font-size: 12px; color: #c07030;
+          background: #fdf8ee; border-radius: 6px; padding: 8px 12px; margin: 6px 0;
+          border: 1px solid #f0e0b0; line-height: 1.4;
+        }
+        .hg-footer-note {
+          border-top: 1px solid #e9e9e7; margin-top: 48px; padding: 24px 0 0;
+          font-family: 'system-ui', sans-serif; font-size: 11px; color: #c0bfbb; line-height: 1.7;
+        }
       `}</style>
 
-      {/* Page header */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 96px 0" }}>
-        <div style={{ marginBottom: 8, fontSize: 13, color: "#9b9b97" }}>
-          🧪 Science / Weekend Optimization
-        </div>
-        <h1 style={{
-          fontSize: 40, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.15,
-          color: "#37352f", marginBottom: 8,
-        }}>
-          Hangover Simulator
-        </h1>
-        <p style={{ fontSize: 16, color: "#787774", lineHeight: 1.6, maxWidth: 580, marginBottom: 32 }}>
+      <div className="hg-content">
+        {/* Title block — visible on both views */}
+        <div className="hg-eyebrow">🧪 Science / Weekend Optimization</div>
+        <h1 className="hg-title">Hangover Simulator</h1>
+        <p className="hg-blurb">
           ODE-based model of BAC (Widmark + Michaelis–Menten elimination), acetaldehyde and
           congener inflammation, dehydration load, and sleep architecture disruption.
         </p>
 
-        {/* Score callout */}
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 16,
-          background: meta.bg, border: `1px solid ${meta.color}30`,
-          borderRadius: 12, padding: "16px 24px", marginBottom: 40,
-        }}>
-          <span style={{ fontSize: 36 }}>{meta.emoji}</span>
-          <div>
-            <div style={{ fontSize: 13, color: meta.color, fontFamily: "'system-ui', sans-serif", fontWeight: 500 }}>Predicted next-day outcome</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: meta.color, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              {meta.label} <span style={{ fontSize: 18, opacity: 0.6 }}>({result.hangoverScore}/10)</span>
-            </div>
-          </div>
+        {/* Step indicator */}
+        <div className="hg-steps">
+          <span className={`hg-step ${view === "inputs" ? "active" : "done"}`}>
+            <span className="dot">{view === "inputs" ? "1" : "✓"}</span>
+            <span className="hg-step-label">Inputs</span>
+          </span>
+          <span className="hg-step-sep">———</span>
+          <span className={`hg-step ${view === "results" ? "active" : ""}`}>
+            <span className="dot">2</span>
+            <span className="hg-step-label">Results</span>
+          </span>
         </div>
 
-        {/* Stat row */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 48, flexWrap: "wrap" }}>
-          <StatCard label="Peak BAC" value={`${result.maxBAC} g/dL`}
-            sub={result.maxBAC > 0.08 ? "Above legal limit" : "Below legal limit"}
-            warn={result.maxBAC > 0.08} good={result.maxBAC < 0.04} />
-          <StatCard label="BAC at sleep onset" value={`${result.bacOnset} g/dL`}
-            sub="Drives SWS suppression" warn={result.bacOnset > 0.04} good={result.bacOnset === 0} />
-          <StatCard label="SWS suppression" value={`${result.SWS_disruption}%`}
-            sub="Slow-wave, late night" warn={result.SWS_disruption > 50} />
-          <StatCard label="REM disruption" value={`${result.REM_disruption}%`}
-            sub="Suppressed early, rebound late" warn={result.REM_disruption > 50} />
-          <StatCard label="Inflammation" value={`${result.inflammatoryScore}%`}
-            sub="Acetaldehyde + congeners" warn={result.inflammatoryScore > 60} />
-          <StatCard label="Dehydration" value={`${result.dehydrationScore}%`}
-            sub={`${result.totalGrams} g ethanol total`} warn={result.dehydrationScore > 60} />
-          <StatCard label="Fragmentation" value={`${result.fragmentationScore}%`}
-            sub="Clearance microarousals" warn={result.fragmentationScore > 60} />
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80 }}>
-          {/* LEFT: Properties */}
-          <div>
+        {view === "inputs" ? (
+          <>
             <Section title="Physiology" icon="🧬">
               <SliderProp label="Body weight" value={weightKg} min={45} max={130} onChange={setWeightKg}
                 display={`${weightKg} kg`} hint={`${Math.round(weightKg * 2.205)} lb`} />
               <PropertyRow label="Sex" hint="affects Vd (volume of distribution)">
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <Tag active={sex === "male"} onClick={() => setSex("male")} color="#37352f" activeBg="#e3e3e0">Male (Vd 0.68)</Tag>
                   <Tag active={sex === "female"} onClick={() => setSex("female")} color="#37352f" activeBg="#e3e3e0">Female (Vd 0.55)</Tag>
                 </div>
@@ -475,6 +530,23 @@ export default function HangoverNotion() {
               <PropertyRow label="Food in stomach" hint="1.8× slower absorption">
                 <Toggle value={food} onChange={setFood} />
               </PropertyRow>
+            </Section>
+
+            <Section title="Drink schedule" icon="🍺">
+              <PropertyRow label="Drink type">
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {Object.entries(DRINK_TYPES).map(([k, v]) => (
+                    <Tag key={k} active={drinkType === k} onClick={() => setDrinkType(k)}>{v.emoji} {v.label}</Tag>
+                  ))}
+                </div>
+              </PropertyRow>
+              <div style={{ marginTop: 14 }}>
+                <DrinkGrid drinks={drinks} setDrinks={setDrinks} drinkType={drinkType} />
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: "#9b9b97", fontFamily: "'system-ui', sans-serif" }}>
+                {result.drinkCount} drink{result.drinkCount !== 1 ? "s" : ""} · {result.totalGrams} g ethanol
+                {drinks.length > 0 && ` · last at ${formatHour(Math.max(...drinks.map(d => d.hour)))}`}
+              </div>
             </Section>
 
             <Section title="Modifiers" icon="⚗️">
@@ -494,7 +566,7 @@ export default function HangoverNotion() {
                 </div>
               </PropertyRow>
               {substance !== "none" && (
-                <div style={{ fontSize: 12, color: "#c07030", background: "#fdf8ee", borderRadius: 6, padding: "8px 12px", margin: "6px 0", border: "1px solid #f0e0b0" }}>
+                <div className="hg-warn-callout">
                   ⚠ Shifts perceived bedtime later, slows ethanol elimination — BAC at sleep onset will be higher than expected
                 </div>
               )}
@@ -503,15 +575,162 @@ export default function HangoverNotion() {
               </PropertyRow>
             </Section>
 
+            <button className="hg-cta" onClick={showResults}>
+              See results <span aria-hidden="true">→</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="hg-cta hg-cta-secondary" onClick={editInputs}>
+              ← Edit inputs
+            </button>
+
+            {/* Score callout */}
+            <div
+              className="hg-score-callout"
+              style={{ background: meta.bg, border: `1px solid ${meta.color}30`, marginTop: 24 }}
+            >
+              <span style={{ fontSize: 36 }}>{meta.emoji}</span>
+              <div>
+                <div style={{ fontSize: 13, color: meta.color, fontFamily: "'system-ui', sans-serif", fontWeight: 500 }}>Predicted next-day outcome</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: meta.color, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+                  {meta.label} <span style={{ fontSize: 18, opacity: 0.6 }}>({result.hangoverScore}/10)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="hg-stat-row">
+              <StatCard label="Peak BAC" value={`${result.maxBAC} g/dL`}
+                sub={result.maxBAC > 0.08 ? "Above legal limit" : "Below legal limit"}
+                warn={result.maxBAC > 0.08} good={result.maxBAC < 0.04} />
+              <StatCard label="BAC at sleep" value={`${result.bacOnset} g/dL`}
+                sub="Drives SWS suppression" warn={result.bacOnset > 0.04} good={result.bacOnset === 0} />
+              <StatCard label="SWS suppression" value={`${result.SWS_disruption}%`}
+                sub="Slow-wave, late night" warn={result.SWS_disruption > 50} />
+              <StatCard label="REM disruption" value={`${result.REM_disruption}%`}
+                sub="Suppressed early, rebound late" warn={result.REM_disruption > 50} />
+              <StatCard label="Inflammation" value={`${result.inflammatoryScore}%`}
+                sub="Acetaldehyde + congeners" warn={result.inflammatoryScore > 60} />
+              <StatCard label="Dehydration" value={`${result.dehydrationScore}%`}
+                sub={`${result.totalGrams} g ethanol total`} warn={result.dehydrationScore > 60} />
+              <StatCard label="Fragmentation" value={`${result.fragmentationScore}%`}
+                sub="Clearance microarousals" warn={result.fragmentationScore > 60} />
+            </div>
+
+            {/* Charts */}
+            <div className="hg-section-title">📊 Charts</div>
+            <div className="hg-tabs">
+              {[
+                { id: "bac", label: "BAC & AcAld" },
+                { id: "rl", label: "RL Discounting" },
+                { id: "sleep", label: "Sleep Architecture" },
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setChartTab(t.id)}
+                  className={`hg-tab ${chartTab === t.id ? "active" : ""}`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {chartTab === "bac" && (
+              <div>
+                <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5, fontFamily: "'system-ui', sans-serif" }}>
+                  BAC computed via Widmark ODE with gamma-distributed absorption per drink type and
+                  Michaelis–Menten elimination. Acetaldehyde follows first-order clearance.
+                </p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={result.timeline} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
+                    <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={11} />
+                    <YAxis yAxisId="bac" tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, "auto"]} />
+                    <YAxis yAxisId="acald" orientation="right" tick={{ fill: "#c0bfbb", fontSize: 10 }} />
+                    <Tooltip content={<ChartTooltip />} />
+                    <ReferenceLine yAxisId="bac" y={0.08} stroke="#e0a0a0" strokeDasharray="4 2" label={{ value: "0.08 legal", fill: "#e0a0a0", fontSize: 10 }} />
+                    <ReferenceLine yAxisId="bac" y={0.03} stroke="#c8d8a0" strokeDasharray="4 2" label={{ value: "0.03 REM", fill: "#9b9b97", fontSize: 10 }} />
+                    <ReferenceLine yAxisId="bac" x={formatHour(bedtimeHr)} stroke="#c0bfbb" strokeDasharray="2 2" label={{ value: "sleep", fill: "#c0bfbb", fontSize: 10 }} />
+                    <Line yAxisId="bac" type="monotone" dataKey="BAC" stroke="#37352f" strokeWidth={2} dot={false} name="BAC (g/dL)" />
+                    <Line yAxisId="acald" type="monotone" dataKey="AcAld" stroke="#c07030" strokeWidth={1.5} dot={false} name="Acetaldehyde" strokeDasharray="5 3" />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {chartTab === "rl" && (
+              <div>
+                <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5, fontFamily: "'system-ui', sans-serif" }}>
+                  Discount factor γ = 0.3 + 0.7·(BAC/0.15). As BAC rises, drunk-you weights immediate
+                  fun heavily and discounts tomorrow's misery almost entirely.
+                </p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={result.timeline.filter(d => d.t <= bedtimeHr + 1)} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
+                    <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={11} />
+                    <YAxis yAxisId="left" tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, 1]} />
+                    <YAxis yAxisId="right" orientation="right" tick={{ fill: "#c0bfbb", fontSize: 10 }} />
+                    <Tooltip content={<ChartTooltip />} />
+                    <ReferenceLine yAxisId="left" y={0.67} stroke="#c0bfbb" strokeDasharray="3 2" label={{ value: "BAC 0.08", fill: "#c0bfbb", fontSize: 10 }} />
+                    <Line yAxisId="left" type="monotone" dataKey="gamma" stroke="#37352f" strokeWidth={2} dot={false} name="Discount factor γ" />
+                    <Line yAxisId="right" type="monotone" dataKey="perceivedFun" stroke="#3d9970" strokeWidth={1.5} dot={false} name="Perceived fun" />
+                    <Line yAxisId="right" type="monotone" dataKey="actualCost" stroke="#c04040" strokeWidth={1.5} dot={false} name="Actual cost" strokeDasharray="4 2" />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p style={{ fontSize: 11, color: "#c0bfbb", marginTop: 8, fontStyle: "italic", fontFamily: "'system-ui', sans-serif" }}>
+                  Gap between green and red = how much drunk-you overestimates the next drink
+                </p>
+              </div>
+            )}
+
+            {chartTab === "sleep" && (
+              <div>
+                <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5, fontFamily: "'system-ui', sans-serif" }}>
+                  Dashed = ideal. Solid = alcohol-disrupted. SWS gets a small early boost
+                  (anesthetic-like), then collapses in the back half. REM is suppressed early
+                  and rebounds fragmented as BAC clears.
+                </p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={result.sleepData} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
+                    <defs>
+                      {[["sws","#3d9970"],["rem","#4a7fb5"]].map(([id,c]) => (
+                        <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={c} stopOpacity={0.15} />
+                          <stop offset="95%" stopColor={c} stopOpacity={0.01} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
+                    <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={3} />
+                    <YAxis tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, 1]} />
+                    <Tooltip content={<ChartTooltip />} />
+                    <Area type="monotone" dataKey="Ideal SWS" stroke="#c0d8c0" strokeWidth={1} fill="none" strokeDasharray="4 2" />
+                    <Area type="monotone" dataKey="Ideal REM" stroke="#b0c8e0" strokeWidth={1} fill="none" strokeDasharray="4 2" />
+                    <Area type="monotone" dataKey="Actual SWS" stroke="#3d9970" strokeWidth={2} fill="url(#sws)" />
+                    <Area type="monotone" dataKey="Actual REM" stroke="#4a7fb5" strokeWidth={2} fill="url(#rem)" />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 12, flexWrap: "wrap", fontFamily: "'system-ui', sans-serif" }}>
+                  <span style={{ color: result.SWS_disruption > 50 ? "#c07030" : "#9b9b97" }}>SWS loss: {result.SWS_disruption}%</span>
+                  <span style={{ color: result.REM_disruption > 50 ? "#c07030" : "#9b9b97" }}>REM loss: {result.REM_disruption}%</span>
+                  <span style={{ color: result.fragmentationScore > 60 ? "#c07030" : "#9b9b97" }}>Fragmentation: {result.fragmentationScore}%</span>
+                </div>
+              </div>
+            )}
+
             <Section title="Model equations" icon="∂" defaultOpen={false}>
-              <div style={{ fontFamily: "'Courier New', monospace", fontSize: 12, color: "#787774", lineHeight: 2, padding: "8px 0" }}>
+              <div style={{ fontFamily: "'Courier New', monospace", fontSize: 12, color: "#787774", lineHeight: 2, padding: "8px 0", overflowX: "auto" }}>
                 <div>dBAC/dt = Σ absorption_i(t) − V·BAC/(K_m + BAC)</div>
                 <div>dAcAld/dt = k_prod·(elim flux) − k_clear·AcAld</div>
                 <div style={{ marginTop: 8 }}>V_max ≈ 0.017 g/dL/hr · K_m = 0.005</div>
                 <div>Vd(♂) = 0.68 L/kg · Vd(♀) = 0.55 L/kg</div>
                 <div>γ(t) = min(0.99, 0.3 + 0.7·BAC/0.15)</div>
                 <div style={{ marginTop: 8 }}>H = 0.20·SWS + 0.20·REM + 0.20·Infl</div>
-                <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20·Dehyd + 0.20·Frag</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20·Dehyd + 0.20·Frag</div>
                 <div>SWS = σ(BAC_onset, μ=0.04, k=40)</div>
                 <div>REM = 0.4·σ(BAC, 0.03) + 0.6·rebound</div>
                 <div>Infl = 0.65·AcAld + 0.35·congener·dose</div>
@@ -519,140 +738,17 @@ export default function HangoverNotion() {
                 <div>Frag = min(1, BAC_drop_rate / 0.025)</div>
               </div>
             </Section>
-          </div>
 
-          {/* RIGHT: Drink schedule + charts */}
-          <div>
-            <Section title="Drink schedule" icon="🍺">
-              <PropertyRow label="Drink type">
-                <div style={{ display: "flex", gap: 5 }}>
-                  {Object.entries(DRINK_TYPES).map(([k, v]) => (
-                    <Tag key={k} active={drinkType === k} onClick={() => setDrinkType(k)}>{v.emoji} {v.label}</Tag>
-                  ))}
-                </div>
-              </PropertyRow>
-              <div style={{ marginTop: 12 }}>
-                <DrinkGrid drinks={drinks} setDrinks={setDrinks} drinkType={drinkType} />
-              </div>
-              <div style={{ marginTop: 10, fontSize: 12, color: "#9b9b97" }}>
-                {result.drinkCount} drink{result.drinkCount !== 1 ? "s" : ""} · {result.totalGrams} g ethanol
-                {drinks.length > 0 && ` · last at ${formatHour(Math.max(...drinks.map(d => d.hour)))}`}
-              </div>
-            </Section>
+            <button className="hg-cta hg-cta-secondary" onClick={editInputs} style={{ marginTop: 24 }}>
+              ← Edit inputs
+            </button>
+          </>
+        )}
 
-            <Section title="Charts" icon="📊">
-              {/* Tab bar */}
-              <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #e9e9e7", marginBottom: 16 }}>
-                {[
-                  { id: "bac", label: "BAC & AcAld" },
-                  { id: "rl", label: "RL Discounting" },
-                  { id: "sleep", label: "Sleep Architecture" },
-                ].map(t => (
-                  <button key={t.id} onClick={() => setChartTab(t.id)} style={{
-                    background: "none", border: "none", borderBottom: `2px solid ${chartTab === t.id ? "#37352f" : "transparent"}`,
-                    padding: "6px 12px", fontSize: 12, color: chartTab === t.id ? "#37352f" : "#9b9b97",
-                    cursor: "pointer", fontFamily: "inherit", marginBottom: -1, transition: "all 0.15s",
-                  }}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {chartTab === "bac" && (
-                <div>
-                  <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5 }}>
-                    BAC computed via Widmark ODE with gamma-distributed absorption per drink type
-                    and Michaelis–Menten elimination. Acetaldehyde follows first-order clearance.
-                  </p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={result.timeline}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
-                      <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={11} />
-                      <YAxis yAxisId="bac" tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, "auto"]} />
-                      <YAxis yAxisId="acald" orientation="right" tick={{ fill: "#c0bfbb", fontSize: 10 }} />
-                      <Tooltip content={<ChartTooltip />} />
-                      <ReferenceLine yAxisId="bac" y={0.08} stroke="#e0a0a0" strokeDasharray="4 2" label={{ value: "0.08 legal", fill: "#e0a0a0", fontSize: 10 }} />
-                      <ReferenceLine yAxisId="bac" y={0.03} stroke="#c8d8a0" strokeDasharray="4 2" label={{ value: "0.03 REM", fill: "#9b9b97", fontSize: 10 }} />
-                      <ReferenceLine yAxisId="bac" x={formatHour(bedtimeHr)} stroke="#c0bfbb" strokeDasharray="2 2" label={{ value: "sleep", fill: "#c0bfbb", fontSize: 10 }} />
-                      <Line yAxisId="bac" type="monotone" dataKey="BAC" stroke="#37352f" strokeWidth={2} dot={false} name="BAC (g/dL)" />
-                      <Line yAxisId="acald" type="monotone" dataKey="AcAld" stroke="#c07030" strokeWidth={1.5} dot={false} name="Acetaldehyde" strokeDasharray="5 3" />
-                      <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-
-              {chartTab === "rl" && (
-                <div>
-                  <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5 }}>
-                    Discount factor γ = 0.3 + 0.7·(BAC/0.15). As BAC rises, drunk-you weights
-                    immediate fun heavily and discounts tomorrow's misery almost entirely.
-                  </p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={result.timeline.filter(d => d.t <= bedtimeHr + 1)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
-                      <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={11} />
-                      <YAxis yAxisId="left" tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, 1]} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fill: "#c0bfbb", fontSize: 10 }} />
-                      <Tooltip content={<ChartTooltip />} />
-                      <ReferenceLine yAxisId="left" y={0.67} stroke="#c0bfbb" strokeDasharray="3 2" label={{ value: "BAC 0.08", fill: "#c0bfbb", fontSize: 10 }} />
-                      <Line yAxisId="left" type="monotone" dataKey="gamma" stroke="#37352f" strokeWidth={2} dot={false} name="Discount factor γ" />
-                      <Line yAxisId="right" type="monotone" dataKey="perceivedFun" stroke="#3d9970" strokeWidth={1.5} dot={false} name="Perceived fun" />
-                      <Line yAxisId="right" type="monotone" dataKey="actualCost" stroke="#c04040" strokeWidth={1.5} dot={false} name="Actual cost" strokeDasharray="4 2" />
-                      <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                  <p style={{ fontSize: 11, color: "#c0bfbb", marginTop: 8, fontStyle: "italic" }}>
-                    Gap between green and red = how much drunk-you overestimates the next drink
-                  </p>
-                </div>
-              )}
-
-              {chartTab === "sleep" && (
-                <div>
-                  <p style={{ fontSize: 12, color: "#9b9b97", marginBottom: 12, lineHeight: 1.5 }}>
-                    Dashed = ideal. Solid = alcohol-disrupted. SWS gets a small early boost
-                    (anesthetic-like), then collapses in the back half. REM is suppressed early
-                    and rebounds fragmented as BAC clears.
-                  </p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart data={result.sleepData}>
-                      <defs>
-                        {[["sws","#3d9970"],["rem","#4a7fb5"]].map(([id,c]) => (
-                          <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={c} stopOpacity={0.15} />
-                            <stop offset="95%" stopColor={c} stopOpacity={0.01} />
-                          </linearGradient>
-                        ))}
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f1ef" />
-                      <XAxis dataKey="hour" tick={{ fill: "#c0bfbb", fontSize: 10 }} interval={3} />
-                      <YAxis tick={{ fill: "#c0bfbb", fontSize: 10 }} domain={[0, 1]} />
-                      <Tooltip content={<ChartTooltip />} />
-                      <Area type="monotone" dataKey="Ideal SWS" stroke="#c0d8c0" strokeWidth={1} fill="none" strokeDasharray="4 2" />
-                      <Area type="monotone" dataKey="Ideal REM" stroke="#b0c8e0" strokeWidth={1} fill="none" strokeDasharray="4 2" />
-                      <Area type="monotone" dataKey="Actual SWS" stroke="#3d9970" strokeWidth={2} fill="url(#sws)" />
-                      <Area type="monotone" dataKey="Actual REM" stroke="#4a7fb5" strokeWidth={2} fill="url(#rem)" />
-                      <Legend wrapperStyle={{ fontSize: 11, color: "#9b9b97" }} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: "flex", gap: 20, marginTop: 10, fontSize: 12, flexWrap: "wrap" }}>
-                    <span style={{ color: result.SWS_disruption > 50 ? "#c07030" : "#9b9b97" }}>SWS loss: {result.SWS_disruption}%</span>
-                    <span style={{ color: result.REM_disruption > 50 ? "#c07030" : "#9b9b97" }}>REM loss: {result.REM_disruption}%</span>
-                    <span style={{ color: result.fragmentationScore > 60 ? "#c07030" : "#9b9b97" }}>Fragmentation: {result.fragmentationScore}%</span>
-                  </div>
-                </div>
-              )}
-            </Section>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div style={{ borderTop: "1px solid #e9e9e7", marginTop: 48, padding: "24px 0 60px", fontSize: 12, color: "#c0bfbb", lineHeight: 1.8 }}>
-          Widmark BAC · Michaelis–Menten elimination · Gamma absorption · Acetaldehyde &amp;
-          congener inflammation · Vasopressin-mediated dehydration · SWS suppression &amp; REM
-          rebound · Sleep fragmentation · PFC-impairment discount factor · Nothing good happens
-          after 2am.
+        <div className="hg-footer-note">
+          Widmark BAC · Michaelis–Menten elimination · Gamma absorption · Acetaldehyde &amp; congener
+          inflammation · Vasopressin-mediated dehydration · SWS suppression &amp; REM rebound · Sleep
+          fragmentation · PFC-impairment discount factor · Nothing good happens after 2am.
         </div>
       </div>
     </div>
