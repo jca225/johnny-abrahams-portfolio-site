@@ -299,7 +299,6 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
 
   const handleClick = (hour, evt) => {
     const here = drinks.filter(d => d.hour === hour);
-    const allSameAsCurrent = here.length > 0 && here.every(d => d.type === drinkType);
 
     // Desktop power-user shortcut: shift- or alt-click stacks one drink onto the slot.
     if (evt.shiftKey || evt.altKey) {
@@ -310,27 +309,22 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
     const now = Date.now();
     const last = lastTapRef.current;
 
-    // Double-tap on the same slot → undo the toggle and stack +1 instead.
+    // Double-tap on the same slot → undo the toggle and stack +1 of the current
+    // drink type onto the slot's pre-tap state. This is also how you mix: have
+    // a beer at 9PM, switch the drink-type tag to Shot, double-tap the slot,
+    // and the pre-tap [beer] is restored before the shot is stacked, giving
+    // [beer, shot].
     if (last && last.hour === hour && (now - last.time) < DOUBLE_TAP_MS) {
       lastTapRef.current = null;
       writeSlot(hour, stackOnto(hour, last.prevHere));
       return;
     }
 
-    // Single tap. Three cases:
-    //  (a) Empty slot       → add one drink of the currently-selected type.
-    //  (b) All-same-as-cur. → clear the slot (toggle off).
-    //  (c) Different/mixed  → stack one drink of the current type, so switching
-    //                         drink type and tapping is the natural way to mix
-    //                         (e.g. add a shot to a slot that already has a beer).
+    // Single tap is a pure toggle: empty → add 1 of current type, anything → 0.
+    // This keeps "remove all drinks from a slot" a single tap regardless of
+    // what's in the slot (homogeneous, mixed, or non-matching).
     lastTapRef.current = { hour, prevHere: here, time: now };
-    if (here.length === 0) {
-      writeSlot(hour, [{ hour, type: drinkType }]);
-    } else if (allSameAsCurrent) {
-      writeSlot(hour, []);
-    } else {
-      writeSlot(hour, stackOnto(hour, here));
-    }
+    writeSlot(hour, here.length === 0 ? [{ hour, type: drinkType }] : []);
   };
 
   return (
@@ -390,7 +384,7 @@ function DrinkGrid({ drinks, setDrinks, drinkType }) {
       <div className="hg-grid-legend">
         <span>▏midnight</span>
         <span style={{ color: "#e0a0a0" }}>▏2am — diminishing returns</span>
-        <span className="hg-grid-help">tap = toggle · switch type &amp; tap = mix · double-tap = stack · max 4</span>
+        <span className="hg-grid-help">tap = toggle · double-tap = stack (use with switched type to mix) · max 4</span>
       </div>
     </div>
   );
