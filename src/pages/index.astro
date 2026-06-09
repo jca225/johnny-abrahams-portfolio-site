@@ -11,21 +11,22 @@ import ProjectCard from '../components/ProjectCard.astro';
   <!-- Hero -->
   <section class="section">
     <div class="container">
-      <span class="eyebrow">MS in Data Science · University of Pennsylvania · '27</span>
+      <span class="eyebrow">MS in Data Science · University of Pennsylvania · '26</span>
       <h1 class="display display-lg hero-title">John Abrahams</h1>
       <p class="hero-subtitle">Computer Science &amp; Data Science.</p>
       <p class="lead hero-lead">
         Currently a master&rsquo;s student in Data Science at the
-        <strong>University of Pennsylvania</strong>, and co-author of
+        <strong>University of Pennsylvania</strong> and a software engineer intern at
+        <strong>Ninth Wave</strong> (open-finance fintech), and co-author of
         <a href="/projects/khronos">Khronos</a>, a multi-tenant WebAssembly runtime. Before
         Penn — BS in Computer Science &amp; Engineering at Lehigh, parallel WebAssembly with
         Prof.&nbsp;Spear, a clinical therapy chatbot at New York Brain &amp; Spine Surgery
         (through March 2026), and a fintech sim with 61M data points.
       </p>
       <ul class="hero-meta">
-        <li><span class="mono">now</span> &nbsp;Penn MS coursework · Khronos paper.</li>
-        <li><span class="mono">prev</span> &nbsp;NYBSS therapy chatbot ('25–'26) · BSCS Lehigh '25 · Dean's list 4 semesters · GPA 3.65</li>
-        <li><span class="mono">stack</span> &nbsp;Rust · Go · Python · C++ · WebAssembly · PyTorch · AWS</li>
+        <li><span class="mono">now</span> &nbsp;Penn MS Data Science (GPA 3.62) · SWE intern @ Ninth Wave · Khronos paper.</li>
+        <li><span class="mono">prev</span> &nbsp;NYBSS therapy chatbot ('25–'26) · BSCS Lehigh '25 (GPA 3.65, major 3.75) · Dean's list 4 semesters</li>
+        <li><span class="mono">stack</span> &nbsp;Rust · Go · Python · Java · C++ · WebAssembly · PyTorch · AWS</li>
       </ul>
     </div>
   </section>
@@ -61,9 +62,29 @@ import ProjectCard from '../components/ProjectCard.astro';
   <!-- Projects -->
   <section class="section">
     <div class="container">
-      <span class="eyebrow">Projects</span>
-      <h2 class="display display-sm section-title">Smaller things.</h2>
+      <span class="eyebrow">Work &amp; projects</span>
+      <h2 class="display display-sm section-title">More things I&rsquo;ve built.</h2>
       <div class="card-list">
+        <ProjectCard
+          title="Ninth Wave — Software Engineer Intern"
+          tags="Summer 2026 · fintech · Java/Spring · AWS · Python LLM tooling"
+          blurb="Summer 2026 SWE internship at an open-finance fintech. Built Python LLM tooling for bank-API-to-canonical-model mapping and automated RFP generation across ERP integrations (Xero, NetSuite, QuickBooks), and contributed to a Java/Spring Boot developer portal and an AWS Bedrock onboarding agent (Secrets Manager, OpenSearch)."
+        />
+        <ProjectCard
+          title="Systematic Trading Bot"
+          tags="2026 · Python · Alpaca · AWS · backtesting"
+          blurb="A systematic daily-rebalance U.S. ETF momentum strategy on the Alpaca API, validated through a vectorbt backtesting harness. Runs unattended live paper trading on AWS EC2 with Secrets Manager and systemd timers."
+        />
+        <ProjectCard
+          title="neurovariety — Open-Source ML Library"
+          tags="2026 · Rust + Python · algebraic geometry · MIT"
+          blurb="An open-source Python/Rust library that models neural-network function spaces as algebraic varieties — computing dimension, degree, and singular loci to quantify expressivity and implicit bias. Performance-critical core in Rust behind a Python API, MIT-licensed with CI."
+        />
+        <ProjectCard
+          title="Tracklist Engine"
+          tags="2026 · audio ML · PyTorch · DETR · Demucs · MERT"
+          blurb="A multi-stage audio-ML pipeline (scrape, ingest, analysis, labeling, alignment) that reconstructs how recorded DJ mixes are built from their source tracks. Combines DETR cue-point detection, Demucs source separation, and MERT music-transformer embeddings over a normalized SQLite schema."
+        />
         <ProjectCard
           href="/projects/therapy-chatbot"
           title="Clinical Therapy Chatbot"
