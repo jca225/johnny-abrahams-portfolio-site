@@ -26,6 +26,14 @@ const rest = site.projects.filter((p: any) => !p.featured);
 
   <hr />
 
+  <h2 id="projects">Featured projects</h2>
+  {featured.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
+
+  <h2>Other projects</h2>
+  {rest.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
+
+  <hr />
+
   <h2>Education</h2>
   {education.map((e: any) => (
     <p>
@@ -35,8 +43,6 @@ const rest = site.projects.filter((p: any) => !p.featured);
     </p>
   ))}
 
-  <hr />
-
   <h2>Experience</h2>
   {experience.map((x: any) => (
     <p>
@@ -44,14 +50,6 @@ const rest = site.projects.filter((p: any) => !p.featured);
       <ul>{x.bullets.map((b: string) => <li>{b}</li>)}</ul>
     </p>
   ))}
-
-  <hr />
-
-  <h2 id="projects">Featured projects</h2>
-  {featured.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
-
-  <h2>Other projects</h2>
-  {rest.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
 
   <hr />
 
