@@ -1,3 +1,6 @@
+<script is:inline>
+  try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <hr />
 <p>
   <a href="/">Home</a> |
@@ -5,4 +8,23 @@
   <a href="/writing">Writing</a> |
   <a href="/resume.pdf" target="_blank" rel="noopener">Resume (PDF)</a>
 </p>
+<p class="theme-picker">
+  theme:
+  <a href="#" data-set-theme="black">black</a> |
+  <a href="#" data-set-theme="white">white</a> |
+  <a href="#" data-set-theme="paper">paper</a> |
+  <a href="#" data-set-theme="paper-white">paper-white</a> |
+  <a href="#" data-set-theme="gray">gray</a> |
+  <a href="#" data-set-theme="terminal">terminal</a>
+</p>
 <hr />
+<script is:inline>
+  document.querySelectorAll('[data-set-theme]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var t = a.dataset.setTheme;
+      document.documentElement.dataset.theme = t;
+      try { localStorage.setItem('theme', t); } catch (err) {}
+    });
+  });
+</script>

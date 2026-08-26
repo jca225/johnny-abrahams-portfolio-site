@@ -1,100 +1,65 @@
 ---
+// Generated from profile/profile.yaml. Edit the YAML, not this file's content.
 import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import { profile, resumeExperience } from '../lib/profile';
+
+const { identity, education, skills, site, publications } = profile;
+const experience = resumeExperience();
+const featured = site.projects.filter((p: any) => p.featured);
+const rest = site.projects.filter((p: any) => !p.featured);
 ---
 
-<Base title="John Abrahams" current="home">
-  <h1>John Abrahams</h1>
+<Base title={identity.full_name} current="home">
+  <h1>{identity.full_name}</h1>
   <p>
-    MS in Data Science, University of Pennsylvania, 2026.<br />
-    BS in Computer Science &amp; Engineering, Lehigh University, 2025.<br />
-    <a href="mailto:johnnycabrahams@gmail.com">johnnycabrahams@gmail.com</a>
+    <a href={`mailto:${identity.email}`}>{identity.email}</a> |
+    <a href={identity.github_url}>github</a> |
+    <a href={identity.linkedin_url}>linkedin</a> |
+    <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
   </p>
   <p>
-    Currently a master's student in Data Science at Penn and a software engineer intern at
-    <b>Ninth Wave</b> (open-finance fintech). Co-author of
-    <a href="/projects/khronos">Khronos</a>, a multi-tenant WebAssembly runtime.
-    Before Penn: parallel WebAssembly with Prof. Spear at Lehigh, a clinical therapy chatbot at
-    New York Brain &amp; Spine Surgery (through March 2026), and a fintech sim with 61M data points.
-  </p>
-  <p>
-    Now: Penn MS Data Science (GPA 3.62). SWE intern at Ninth Wave. Khronos paper.<br />
-    Prev: NYBSS therapy chatbot (2025-2026). BSCS Lehigh 2025 (GPA 3.65, major 3.75). Dean's list 4 semesters.<br />
-    Stack: Rust, Go, Python, Java, C++, WebAssembly, PyTorch, AWS.
+    Now: {site.now}<br />
+    Prev: {site.prev}<br />
+    {Object.entries(skills).map(([k, v]: [string, any]) => <>{k}: {v.join(', ')}.<br /></>)}
   </p>
 
   <hr />
 
-  <h2 id="projects">Featured</h2>
-  <ProjectCard
-    href="/projects/khronos"
-    title="Khronos: A Type II Exovisor with WebAssembly"
-    tags="2025. Rust. Co-authored paper."
-    blurb="A multi-tenant runtime that combines WebAssembly's sandbox with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime); up to 6.7x speedup on dense matmul while preserving per-tenant trap containment."
-  />
-  <ProjectCard
-    href="/projects/dj-rl-system"
-    title="DJ Reinforcement Learning System"
-    tags="Dec 2025. Embedded. GRU + RL."
-    blurb="A wireless ESP32-S2 sensor mesh (environmental, audio, thermal) that streams crowd-engagement metrics to a Raspberry Pi controller. A 2M-parameter GRU pretrained on ~3,000 DJ sets predicts the next song; an RL head adapts to live sensor feedback. Built with Chris Spletzer for UPenn ESE 519."
-  />
+  <h2>Education</h2>
+  {education.map((e: any) => (
+    <p>
+      <b>{e.school}</b>, {e.graduation}<br />
+      {e.degree}. GPA {e.gpa}.{e.minor && ` Minor: ${e.minor}.`}{e.honors && ` ${e.honors}.`}<br />
+      <span class="muted">Coursework: {e.coursework.join(', ')}</span>
+    </p>
+  ))}
 
   <hr />
 
-  <h2>Work and projects</h2>
-  <ProjectCard
-    title="Ninth Wave: Software Engineer Intern"
-    tags="Summer 2026. Fintech. Java/Spring, AWS, Python LLM tooling."
-    blurb="Summer 2026 SWE internship at an open-finance fintech. Built Python LLM tooling for bank-API-to-canonical-model mapping and automated RFP generation across ERP integrations (Xero, NetSuite, QuickBooks), and contributed to a Java/Spring Boot developer portal and an AWS Bedrock onboarding agent (Secrets Manager, OpenSearch)."
-  />
-  <ProjectCard
-    title="Systematic Trading Bot"
-    tags="2026. Python, Alpaca, AWS, backtesting."
-    blurb="A systematic daily-rebalance U.S. ETF momentum strategy on the Alpaca API, validated through a vectorbt backtesting harness. Runs unattended live paper trading on AWS EC2 with Secrets Manager and systemd timers."
-  />
-  <ProjectCard
-    title="neurovariety: Open-Source ML Library"
-    tags="2026. Rust + Python. Algebraic geometry. MIT license."
-    blurb="An open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias. Performance-critical core in Rust behind a Python API, MIT-licensed with CI."
-  />
-  <ProjectCard
-    title="Tracklist Engine"
-    tags="2026. Audio ML. PyTorch, DETR, Demucs, MERT."
-    blurb="A multi-stage audio-ML pipeline (scrape, ingest, analysis, labeling, alignment) that reconstructs how recorded DJ mixes are built from their source tracks. Combines DETR cue-point detection, Demucs source separation, and MERT music-transformer embeddings over a normalized SQLite schema."
-  />
-  <ProjectCard
-    href="/projects/therapy-chatbot"
-    title="Clinical Therapy Chatbot"
-    tags="May 2025 to Mar 2026. LLaMA, FastAPI."
-    blurb="A production therapy chatbot for New York Brain & Spine Surgery, blending rule-based clinical workflows with LLM-generated responses. Configurable multi-agent system spanning multiple mental-health conditions."
-  />
-  <ProjectCard
-    href="/projects/quant-game"
-    title="The Quant Game"
-    tags="2024. Co-founded. React + Python + AWS."
-    blurb="A full-stack options-trading sim with 61M financial data points on AWS. Users build and backtest strategies and watch them play out against historical market data."
-  />
-  <ProjectCard
-    href="/projects/capstone-search"
-    title="Dropbox Document Search Engine"
-    tags="2024. Capstone. NLP + AWS."
-    blurb="A search engine for ~23,000 Dropbox documents, with sentence-level highlight extraction. Partitioned indexing + Dropbox API integration for real-time access. Lehigh capstone for an early-stage startup."
-  />
-  <ProjectCard
-    href="/hangover"
-    title="Hangover Simulator"
-    tags="Interactive. ODE model."
-    blurb="BAC kinetics, acetaldehyde clearance, sleep disruption, and an RL discount factor for drunk-you's choices."
-  />
+  <h2>Experience</h2>
+  {experience.map((x: any) => (
+    <p>
+      <b>{x.org}</b>, {x.role}. <span class="muted">{x.dates}</span>
+      <ul>{x.bullets.map((b: string) => <li>{b}</li>)}</ul>
+    </p>
+  ))}
+
+  <hr />
+
+  <h2 id="projects">Featured projects</h2>
+  {featured.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
+
+  <h2>Other projects</h2>
+  {rest.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
 
   <hr />
 
   <h2>Writing</h2>
   <p>
-    <a href="/papers/khronos.pdf" target="_blank" rel="noopener">Khronos: A Type II Exovisor Architecture with WebAssembly</a> (2025, with Ajax Li)<br />
-    <a href="/papers/zimvie-acdf-predictive-modeling.pdf" target="_blank" rel="noopener">Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)</a> (2024, co-author, 236-patient cohort study)<br />
-    <a href="/papers/gradient-descent-analysis.pdf" target="_blank" rel="noopener">Gradient Descent Analysis</a> (2023, with Prof. Arielle Carr, Lehigh)<br />
-    <a href="/papers/highlighting-algorithm.pdf" target="_blank" rel="noopener">A Highlighting Algorithm for Document Search</a> (2024, capstone writeup)<br />
+    {publications.map((w: any) => (
+      <><a href={w.pdf} target="_blank" rel="noopener">{w.short_title ?? w.title}</a> ({w.year}, {w.with})<br /></>
+    ))}
   </p>
   <p>More on the <a href="/writing">writing page</a>.</p>
 </Base>

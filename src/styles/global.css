@@ -1,40 +1,61 @@
-/* Plain. Black background, white Times, green links, orange headers, <hr> between sections.
-   Modeled on www.cis.upenn.edu/~mkearns/teaching/CIS625/ */
+/* Plain site. Theme chosen via data-theme on <html>. Default: black (Kearns CIS625). */
 
-html {
-  background: black;
-  color: white;
-  font-family: "Times New Roman", Times, serif;
-  font-size: 16px;
+:root {
+  --bg: black; --fg: white; --link: lightgreen; --alink: red;
+  --head: orange; --muted: #bbb; --rule: #888;
+  --font: "Times New Roman", Times, serif;
 }
+:root[data-theme="white"] {
+  --bg: white; --fg: black; --link: #0000ee; --alink: red;
+  --head: black; --muted: #555; --rule: #999;
+}
+:root[data-theme="paper"] {
+  --bg: #fdfbf5; --fg: #111; --link: #1a4a8a; --alink: red;
+  --head: #7a1f1f; --muted: #666; --rule: #bbb;
+}
+:root[data-theme="paper-white"] {
+  --bg: white; --fg: #111; --link: #1a4a8a; --alink: red;
+  --head: #7a1f1f; --muted: #666; --rule: #bbb;
+}
+:root[data-theme="terminal"] {
+  --bg: black; --fg: #33ff33; --link: #99ff99; --alink: white;
+  --head: #ffff66; --muted: #22aa22; --rule: #22aa22;
+  --font: "Courier New", Courier, monospace;
+}
+:root[data-theme="gray"] {
+  --bg: #c0c0c0; --fg: black; --link: #0000aa; --alink: red;
+  --head: #000080; --muted: #444; --rule: #666;
+}
+
+html { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; }
 body { margin: 8px; }
 
-a:link    { color: lightgreen; }
-a:visited { color: lightgreen; }
-a:active  { color: red; }
+a:link, a:visited { color: var(--link); }
+a:active { color: var(--alink); }
 
-hr { border: 0; border-top: 1px solid #888; margin: 1em 0; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 1em 0; }
 
 h1, h2, h3 {
-  color: orange;
-  font-weight: bold;
-  font-size: 1em;
-  margin: 1em 0 0.5em;
-  text-transform: uppercase;
+  color: var(--head); font-weight: bold; font-size: 1em;
+  margin: 1em 0 0.5em; text-transform: uppercase;
 }
 
 img, video { max-width: 100%; height: auto; }
 
-.muted { color: #bbb; }
-.callout { border: 1px solid #888; padding: 0.5em 0.8em; margin: 1em 0; }
+.muted { color: var(--muted); }
+.callout { border: 1px solid var(--rule); padding: 0.5em 0.8em; margin: 1em 0; }
 
 pre, code { font-family: "Courier New", Courier, monospace; font-size: 0.95em; }
-pre { border: 1px solid #888; padding: 0.5em; overflow-x: auto; }
+pre { border: 1px solid var(--rule); padding: 0.5em; overflow-x: auto; }
 
 table { border-collapse: collapse; margin: 1em 0; }
-th, td { border: 1px solid #888; padding: 0.2em 0.6em; text-align: left; }
+th, td { border: 1px solid var(--rule); padding: 0.2em 0.6em; text-align: left; }
 
 figure { margin: 1em 0; }
-figcaption { color: #bbb; font-size: 0.9em; }
+figcaption { color: var(--muted); font-size: 0.9em; }
 
-blockquote { border-left: 2px solid #888; margin-left: 0; padding-left: 1em; color: #bbb; }
+blockquote { border-left: 2px solid var(--rule); margin-left: 0; padding-left: 1em; color: var(--muted); }
+
+.theme-picker { font-size: 0.85em; color: var(--muted); }
+
+ul { margin: 0.3em 0 0; padding-left: 1.4em; }

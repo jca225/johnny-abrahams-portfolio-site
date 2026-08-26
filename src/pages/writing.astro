@@ -1,49 +1,20 @@
 ---
+// Generated from profile/profile.yaml (publications). Edit the YAML.
 import Base from '../layouts/Base.astro';
+import { profile } from '../lib/profile';
+const pubs = profile.publications;
 ---
 
 <Base title="Writing" description="Papers and writeups by John Abrahams: systems, applied ML, and clinical research." current="writing">
   <h1>Papers and writeups</h1>
-
-  <p>
-    <a href="/papers/khronos.pdf" target="_blank" rel="noopener"><b>Khronos: A Type II Exovisor Architecture with WebAssembly</b></a><br />
-    <span class="muted">2025. With Ajax Li. IEEE format, 9 pp.</span><br />
-    A multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style
-    capability gating and a custom <code>wasi:thread-spawn</code> dispatcher. ~5,000 lines of Rust;
-    ~0.08 MiB per isolate (3x denser than Wasmtime, 18x denser than Docker); up to 6.7x speedup on
-    dense matrix multiply while preserving per-tenant trap containment.<br />
-    <a href="/projects/khronos">Project page</a> |
-    <a href="/papers/khronos.pdf" target="_blank" rel="noopener">PDF</a> |
-    <a href="https://github.com/jca225/webAssembly_Interpreter" target="_blank" rel="noopener">GitHub</a>
-  </p>
-
-  <p>
-    <a href="/papers/zimvie-acdf-predictive-modeling.pdf" target="_blank" rel="noopener"><b>A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling</b></a><br />
-    <span class="muted">2024. Co-author. 236-patient cohort.</span><br />
-    Predictive outcome modeling after Anterior Cervical Diskectomy &amp; Fusion. Evaluated EM-algorithm
-    and regression-based imputation for missing covariates, then fit logistic regression and SVMs to
-    predict patient outcomes from preoperative features. Co-authored while a research associate at
-    New York Brain &amp; Spine Surgery.<br />
-    <a href="/papers/zimvie-acdf-predictive-modeling.pdf" target="_blank" rel="noopener">PDF</a>
-  </p>
-
-  <p>
-    <a href="/papers/gradient-descent-analysis.pdf" target="_blank" rel="noopener"><b>Gradient Descent Analysis</b></a><br />
-    <span class="muted">2023. With Prof. Arielle Carr, Lehigh.</span><br />
-    A short technical writeup on gradient-descent dynamics for a class of optimisation problems we
-    worked through with Prof. Carr. Develops the convergence-rate analysis and checks it against
-    numerical experiments.<br />
-    <a href="/papers/gradient-descent-analysis.pdf" target="_blank" rel="noopener">PDF</a>
-  </p>
-
-  <p>
-    <a href="/papers/highlighting-algorithm.pdf" target="_blank" rel="noopener"><b>A Highlighting Algorithm for Document Search</b></a><br />
-    <span class="muted">2024. Capstone writeup, Lehigh CSE.</span><br />
-    The sentence-level highlight extractor at the heart of my Lehigh capstone search engine. Given a
-    query and a matched sentence, surface the minimal sub-span that explains the match. Deceptively
-    non-trivial when the query is multi-word, partially stop-worded, or syntactically interleaved with
-    the matched sentence.<br />
-    <a href="/projects/capstone-search">Project page</a> |
-    <a href="/papers/highlighting-algorithm.pdf" target="_blank" rel="noopener">PDF</a>
-  </p>
+  {pubs.map((w: any) => (
+    <p>
+      <a href={w.pdf} target="_blank" rel="noopener"><b>{w.title}</b></a><br />
+      <span class="muted">{w.meta}</span><br />
+      {w.abstract}<br />
+      {w.page && <><a href={w.page}>Project page</a> | </>}
+      <a href={w.pdf} target="_blank" rel="noopener">PDF</a>
+      {w.github && <> | <a href={w.github} target="_blank" rel="noopener">GitHub</a></>}
+    </p>
+  ))}
 </Base>

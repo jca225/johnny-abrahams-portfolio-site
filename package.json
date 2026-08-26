@@ -8,13 +8,18 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "resume": "scripts/build_resume.py"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.4",
     "astro": "^5.1.0",
+    "js-yaml": "^5.4.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9"
   }
 }

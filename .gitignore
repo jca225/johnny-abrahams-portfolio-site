@@ -18,3 +18,4 @@ npm-debug.log*
 # editor
 .vscode/
 .idea/
+.resume-build/
