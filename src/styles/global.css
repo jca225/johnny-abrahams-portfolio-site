@@ -36,3 +36,7 @@ figcaption { color: var(--muted); font-size: 0.9em; }
 blockquote { border-left: 2px solid var(--rule); margin-left: 0; padding-left: 1em; color: var(--muted); }
 
 ul { margin: 0.3em 0 0; padding-left: 1.4em; }
+
+table.facts { border-collapse: collapse; margin: 0.5em 0; }
+table.facts th, table.facts td { border: 0; padding: 0.15em 1.2em 0.15em 0; vertical-align: top; text-align: left; }
+table.facts th { font-weight: bold; color: var(--head); white-space: nowrap; }

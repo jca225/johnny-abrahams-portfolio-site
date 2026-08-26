@@ -18,11 +18,11 @@ const rest = site.projects.filter((p: any) => !p.featured);
     <a href={identity.linkedin_url}>linkedin</a> |
     <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
   </p>
-  <p>
-    Now: {site.now}<br />
-    Prev: {site.prev}<br />
-    {Object.entries(skills).map(([k, v]: [string, any]) => <>{k}: {v.join(', ')}.<br /></>)}
-  </p>
+  <table class="facts">
+    <tr><th>Now</th><td>{site.now.map((x: string) => <>{x}<br /></>)}</td></tr>
+    <tr><th>Prev</th><td>{site.prev.map((x: string) => <>{x}<br /></>)}</td></tr>
+    {Object.entries(skills).map(([k, v]: [string, any]) => <tr><th>{k}</th><td>{v.join(', ')}</td></tr>)}
+  </table>
 
   <hr />
 
