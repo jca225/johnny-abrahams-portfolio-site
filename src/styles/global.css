@@ -1,30 +1,9 @@
-/* Plain site. Theme chosen via data-theme on <html>. Default: black (Kearns CIS625). */
+/* Plain site, "paper" theme. Modeled on www.cis.upenn.edu/~mkearns/teaching/CIS625/ */
 
 :root {
-  --bg: black; --fg: white; --link: lightgreen; --alink: red;
-  --head: orange; --muted: #bbb; --rule: #888;
-  --font: "Times New Roman", Times, serif;
-}
-:root[data-theme="white"] {
-  --bg: white; --fg: black; --link: #0000ee; --alink: red;
-  --head: black; --muted: #555; --rule: #999;
-}
-:root[data-theme="paper"] {
   --bg: #fdfbf5; --fg: #111; --link: #1a4a8a; --alink: red;
   --head: #7a1f1f; --muted: #666; --rule: #bbb;
-}
-:root[data-theme="paper-white"] {
-  --bg: white; --fg: #111; --link: #1a4a8a; --alink: red;
-  --head: #7a1f1f; --muted: #666; --rule: #bbb;
-}
-:root[data-theme="terminal"] {
-  --bg: black; --fg: #33ff33; --link: #99ff99; --alink: white;
-  --head: #ffff66; --muted: #22aa22; --rule: #22aa22;
-  --font: "Courier New", Courier, monospace;
-}
-:root[data-theme="gray"] {
-  --bg: #c0c0c0; --fg: black; --link: #0000aa; --alink: red;
-  --head: #000080; --muted: #444; --rule: #666;
+  --font: "Times New Roman", Times, serif;
 }
 
 html { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; }
@@ -55,7 +34,5 @@ figure { margin: 1em 0; }
 figcaption { color: var(--muted); font-size: 0.9em; }
 
 blockquote { border-left: 2px solid var(--rule); margin-left: 0; padding-left: 1em; color: var(--muted); }
-
-.theme-picker { font-size: 0.85em; color: var(--muted); }
 
 ul { margin: 0.3em 0 0; padding-left: 1.4em; }
