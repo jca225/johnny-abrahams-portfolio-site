@@ -74,14 +74,14 @@ experience:
       - "Assembled a 2,000+ DJ-set training corpus with a custom Python scraper and audio-metadata preprocessing pipeline."
       - "Delivered an end-to-end system linking embedded hardware, Python services, and a real-time DJ control GUI over WiFi."
 
-  - id: khronos
-    org: "Khronos: Multi-Tenant WebAssembly Runtime"
+  - id: kronos
+    org: "Kronos: Multi-Tenant WebAssembly Runtime"
     role: "UPenn Research (Prof. Sebastian Angel)"
     dates: "Oct 2024 – Present"
     kind: research
     tags: [systems, rust, webassembly, concurrency, security, runtime, performance]
     bullets:
-      - "Built Khronos, a multi-tenant WebAssembly runtime in Rust (~5K lines) that packs tenants ~20× denser than Docker (~0.08 MiB per isolate) using exokernel-style capability gating with per-invocation fuel and wall-clock budgets."
+      - "Built Kronos, a multi-tenant WebAssembly runtime in Rust (~5K lines) that packs tenants ~20× denser than Docker (~0.08 MiB per isolate) using exokernel-style capability gating with per-invocation fuel and wall-clock budgets."
       - "Engineered a work-stealing thread pool that dispatches guest pthread_create calls for shared-memory data parallelism, reaching 6.7× speedup on four cores."
       - "Exposed a tiered ~74-entry capability-gated host interface; benchmarked against the wasmtime and wazero runtimes on C++ kernels (matmul, k-means, SVD) and co-authored a 9-page systems paper introducing the resulting 'Type II exovisor' abstraction."
 
@@ -180,7 +180,7 @@ site:
   headline: "MS in Data Science, University of Pennsylvania, 2026. BS in Computer Science & Engineering, Lehigh University, 2025."
   bio: >-
     Currently a master's student in Data Science at Penn and a software engineer intern at
-    Ninth Wave (open-finance fintech). Co-author of Khronos, a multi-tenant WebAssembly
+    Ninth Wave (open-finance fintech). Co-author of Kronos, a multi-tenant WebAssembly
     runtime. Before Penn: parallel WebAssembly with Prof. Spear at Lehigh, a clinical therapy
     chatbot at New York Brain & Spine Surgery (through March 2026), and a fintech sim with
     61M data points.
@@ -188,14 +188,14 @@ site:
     - "Penn MS Data Science (GPA 3.62)"
   prev:
     - "SWE intern at Ninth Wave (summer 2026)"
-    - "Khronos paper (2025)"
+    - "Kronos paper (2025)"
     - "NYBSS therapy chatbot (2025-2026)"
     - "BSCS Lehigh 2025 (GPA 3.65, major 3.75), Dean's list 4 semesters"
   projects:
-    - id: khronos
+    - id: kronos
       featured: true
-      page: /projects/khronos
-      title: "Khronos: A Type II Exovisor with WebAssembly"
+      page: /projects/kronos
+      title: "Kronos: A Type II Exovisor with WebAssembly"
       tags: "2025. Rust. Co-authored paper."
       blurb: "A multi-tenant runtime that combines WebAssembly's sandbox with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime); up to 6.7x speedup on dense matmul while preserving per-tenant trap containment."
     - id: dj-rl
@@ -242,13 +242,13 @@ site:
       blurb: "BAC kinetics, acetaldehyde clearance, sleep disruption, and an RL discount factor for drunk-you's choices."
 
 publications:
-  - id: khronos-paper
-    title: "Khronos: A Type II Exovisor Architecture with WebAssembly"
+  - id: kronos-paper
+    title: "Kronos: A Type II Exovisor Architecture with WebAssembly"
     year: 2025
     with: "with Ajax Li"
     meta: "2025. With Ajax Li. IEEE format, 9 pp."
-    pdf: /papers/khronos.pdf
-    page: /projects/khronos
+    pdf: /papers/kronos.pdf
+    page: /projects/kronos
     github: https://github.com/jca225/webAssembly_Interpreter
     abstract: "A multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime, 18x denser than Docker); up to 6.7x speedup on dense matrix multiply while preserving per-tenant trap containment."
     on_resume: true
@@ -283,7 +283,7 @@ publications:
 # `experience` stays available to the tailor but is not on the default resume.
 resume:
   include_publications: false   # flip to true if a one-page fit allows
-  experience_order: [nybss-swe, ninth-wave, khronos, quant-game, trading-bot, capstone]
+  experience_order: [nybss-swe, ninth-wave, kronos, quant-game, trading-bot, capstone]
   # per-id bullet selection for the one-page resume: an int = first N bullets,
   # a list = those 0-based indices, omitted = all bullets.
   bullet_limit:

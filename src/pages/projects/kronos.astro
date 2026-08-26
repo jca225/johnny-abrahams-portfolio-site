@@ -3,18 +3,18 @@ import Project from '../../layouts/Project.astro';
 ---
 
 <Project
-  title="Khronos"
+  title="Kronos"
   subtitle="A Type II exovisor for WebAssembly: language-level sandbox + exokernel-style capability gating + a multi-tenant-safe data-parallel path. ~5K lines of Rust, denser than every runtime we benchmarked it against."
   meta="2025 · with Ajax Li · Rust · ~5,000 LOC"
   links={[
-    { label: 'Paper (PDF)', href: '/papers/khronos.pdf', external: true },
+    { label: 'Paper (PDF)', href: '/papers/kronos.pdf', external: true },
     { label: 'Source on GitHub', href: 'https://github.com/jca225/webAssembly_Interpreter', external: true },
   ]}
-  description="Khronos is a multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating. Co-authored by John Abrahams and Ajax Li at the University of Pennsylvania."
+  description="Kronos is a multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating. Co-authored by John Abrahams and Ajax Li at the University of Pennsylvania."
 >
   <h2>Abstract</h2>
   <p>
-    We present <em>Khronos</em>, a runtime that combines WebAssembly&rsquo;s
+    We present <em>Kronos</em>, a runtime that combines WebAssembly&rsquo;s
     language-level sandbox with exokernel-style capability gating and
     scheduler-mediated user-level parallelism. We call this combination a
     <em>Type II exovisor</em>: an ordinary host-OS process that multiplexes
@@ -23,11 +23,11 @@ import Project from '../../layouts/Project.astro';
   </p>
 
   <p>
-    Khronos exposes only ~74 named host entry points to a tenant module, in
+    Kronos exposes only ~74 named host entry points to a tenant module, in
     contrast to the ~300 syscalls reachable from a Linux container, and runs
     each invocation in a fresh sandboxed store with fuel-based instruction
     accounting and epoch-based wall-clock deadlines. To support compute-heavy
-    workloads typical of regulated-data flows, Khronos additionally provides a
+    workloads typical of regulated-data flows, Kronos additionally provides a
     multi-tenant-safe data-parallelism path built on the WebAssembly threads
     proposal: tenant code uses <code>pthread_create</code> unchanged, and a
     custom <code>wasi:thread-spawn</code> handler dispatches workers onto a
@@ -36,7 +36,7 @@ import Project from '../../layouts/Project.astro';
 
   <p>
     Across matrix multiply, k&#8209;means, and SVD power-iteration workloads,
-    Khronos achieves up to <strong>6.7× speedup on four cores</strong> while
+    Kronos achieves up to <strong>6.7× speedup on four cores</strong> while
     remaining <strong>~0.08&nbsp;MiB per tenant isolate</strong> &mdash; an
     order of magnitude denser than vanilla Wasmtime and roughly 20×&nbsp;denser
     than Docker. We argue that this combination &mdash; WebAssembly sandboxing,
@@ -48,7 +48,7 @@ import Project from '../../layouts/Project.astro';
   <div class="callout">
     <strong>Why &ldquo;Type II&rdquo; exovisor?</strong> &mdash; A Type I
     hypervisor virtualises the machine; a container shares the host kernel; a
-    Type&nbsp;II hypervisor runs as a host-OS process. Khronos is the last of
+    Type&nbsp;II hypervisor runs as a host-OS process. Kronos is the last of
     those, but instead of virtualising hardware it virtualises the
     <em>application boundary</em>. Following the exokernel philosophy
     (Engler et al., 1995), the host exposes <em>primitives</em> rather than
@@ -82,14 +82,14 @@ import Project from '../../layouts/Project.astro';
     WebAssembly opens a fourth point. It is structurally a sandbox: bounds-checked
     linear memory, structured control flow, and only declared imports leave the
     sandbox. Host code <em>owns</em> the import table &mdash; therefore it owns
-    the abstraction surface. Khronos turns that observation into a system.
+    the abstraction surface. Kronos turns that observation into a system.
   </p>
 
   <h2>Architecture</h2>
   <figure>
-    <img src="/images/khronos/mt-configurations.png" alt="Khronos configurations and speedup over default" />
+    <img src="/images/kronos/mt-configurations.png" alt="Kronos configurations and speedup over default" />
     <figcaption>
-      Fig. — Cold-start multi-tenant throughput across three Khronos
+      Fig. — Cold-start multi-tenant throughput across three Kronos
       configurations on <code>sfib(20)</code>. The fast-path
       <code>InstancePre</code> peaks at ~41K req/s on the same workload as
       vanilla Wasmtime&rsquo;s 104K, &mdash; a deliberate trade against the
@@ -133,7 +133,7 @@ import Project from '../../layouts/Project.astro';
   <h3>Multi-tenant isolation: per-Runtime engine, per-request store</h3>
   <p>
     WebAssembly&rsquo;s isolation primitive is the <code>Store</code>. Two
-    stores in the same process share no mutable wasm-level state. Khronos
+    stores in the same process share no mutable wasm-level state. Kronos
     constructs one <code>Engine</code> per <code>Runtime</code> (process) and
     one <code>Store</code> per request. The <code>Engine</code> is shared
     across tenants by default in single-threaded mode, but in parallel mode
@@ -153,7 +153,7 @@ import Project from '../../layouts/Project.astro';
   <p>
     Wasmtime&rsquo;s <code>Store</code> is <code>!Sync</code>: it cannot be
     shared across threads. Three ways exist to reconcile this with parallel
-    guest workers; Khronos picked <em>wasm-threads with shared memory</em>:
+    guest workers; Kronos picked <em>wasm-threads with shared memory</em>:
     each worker gets its own <code>Store</code>, but they all bind the same
     <code>SharedMemory</code>. There is no copy. The guest&rsquo;s
     <code>pthread_create</code> does the work-splitting; the host provides
@@ -163,7 +163,7 @@ import Project from '../../layouts/Project.astro';
     The upstream <code>wasmtime-wasi-threads</code> handler calls
     <code>std::process::exit(1)</code> on any worker trap or panic &mdash; for
     a multi-tenant runtime, this is fatal: one tenant&rsquo;s malformed binary
-    would take down every other tenant. Khronos therefore registers its own
+    would take down every other tenant. Kronos therefore registers its own
     <code>wasi:thread-spawn</code> handler with three properties:
   </p>
   <ol>
@@ -200,10 +200,10 @@ import Project from '../../layouts/Project.astro';
   <h2>Evaluation</h2>
   <h3>Tenant density</h3>
   <figure>
-    <img src="/images/khronos/memory-density.png" alt="Per-tenant memory footprint after instantiating N isolates" />
+    <img src="/images/kronos/memory-density.png" alt="Per-tenant memory footprint after instantiating N isolates" />
     <figcaption>
       Fig. — Per-tenant resident-set size after instantiating <em>N</em>
-      isolates. Khronos at ~0.08&nbsp;MiB per isolate is roughly 3–30× denser
+      isolates. Kronos at ~0.08&nbsp;MiB per isolate is roughly 3–30× denser
       than competing runtimes.
     </figcaption>
   </figure>
@@ -214,40 +214,40 @@ import Project from '../../layouts/Project.astro';
   <table>
     <thead><tr><th>Runtime</th><th>Per-isolate cost</th></tr></thead>
     <tbody>
-      <tr><td>khronos-rs</td><td><strong>0.08&nbsp;MiB</strong></td></tr>
+      <tr><td>kronos-rs</td><td><strong>0.08&nbsp;MiB</strong></td></tr>
       <tr><td>Wasmtime (vanilla)</td><td>0.27&nbsp;MiB</td></tr>
       <tr><td>Docker</td><td>~1.40&nbsp;MiB</td></tr>
       <tr><td>wazero</td><td>2.22&nbsp;MiB</td></tr>
     </tbody>
   </table>
   <p>
-    Khronos is approximately 3× denser than vanilla Wasmtime and roughly
-    18× denser than Docker. The Khronos number translates to
+    Kronos is approximately 3× denser than vanilla Wasmtime and roughly
+    18× denser than Docker. The Kronos number translates to
     ~200,000&nbsp;tenants per 16&nbsp;GiB host, against Docker&rsquo;s
     ~11,500 on the same VM.
   </p>
 
   <h3>Multi-tenant throughput</h3>
   <figure>
-    <img src="/images/khronos/multi-tenant-throughput.png" alt="Multi-tenant burst-throughput as concurrent tenant count increases" />
+    <img src="/images/kronos/multi-tenant-throughput.png" alt="Multi-tenant burst-throughput as concurrent tenant count increases" />
     <figcaption>
       Fig. — Aggregate requests/sec when <em>N</em> concurrent threads each
       fire one <code>sfib(20)</code> against their own private isolate.
     </figcaption>
   </figure>
   <p>
-    On the 4-vCPU box, peak throughput is ~38K req/s for Khronos at
+    On the 4-vCPU box, peak throughput is ~38K req/s for Kronos at
     <em>N</em>=16, vs. Wasmtime&rsquo;s ~104K at <em>N</em>=512.
-    Khronos&rsquo;s <code>invoke</code> path has per-call overhead &mdash;
+    Kronos&rsquo;s <code>invoke</code> path has per-call overhead &mdash;
     capability checks, intrinsic linker registration, fuel and epoch reset
     &mdash; that does not amortise on a one-call-per-isolate burst test.
-    Khronos exposes two opt-in configurations (pooling allocator + fast-path
+    Kronos exposes two opt-in configurations (pooling allocator + fast-path
     <code>InstancePre</code>) that close most of the gap.
   </p>
 
   <h3>Parallel intrinsics</h3>
   <figure>
-    <img src="/images/khronos/matmul-seq-vs-par.png" alt="Dense N×N matrix multiply: sequential vs wasm-threads on four cores" />
+    <img src="/images/kronos/matmul-seq-vs-par.png" alt="Dense N×N matrix multiply: sequential vs wasm-threads on four cores" />
     <figcaption>
       Fig. — Dense <em>N</em>&times;<em>N</em> double-precision matrix
       multiply. Sequential vs. wasm-threads on four cores. Speedup grows with
@@ -270,7 +270,7 @@ import Project from '../../layouts/Project.astro';
   </p>
 
   <figure>
-    <img src="/images/khronos/kmeans-seq-vs-par.png" alt="Lloyd-iteration k-means: sequential vs wasm-threads" />
+    <img src="/images/kronos/kmeans-seq-vs-par.png" alt="Lloyd-iteration k-means: sequential vs wasm-threads" />
     <figcaption>Fig. — Lloyd-iteration k-means (k=4, 3 iterations); 4× at N=10,000.</figcaption>
   </figure>
 
@@ -283,7 +283,7 @@ import Project from '../../layouts/Project.astro';
       amortised across calls.
     </li>
     <li>
-      <strong>Fixed worker count.</strong> Khronos hardcodes
+      <strong>Fixed worker count.</strong> Kronos hardcodes
       N<sub>threads</sub>=4 in the guest wrapper to match the typical 4-vCPU
       deployment. An adaptive thread-count or a runtime-supplied variable is
       straightforward future work.
@@ -294,7 +294,7 @@ import Project from '../../layouts/Project.astro';
       workloads do not trigger this; barrier-style workloads would.
     </li>
     <li>
-      <strong>Side-channel posture.</strong> Khronos relies on WebAssembly&rsquo;s
+      <strong>Side-channel posture.</strong> Kronos relies on WebAssembly&rsquo;s
       structural isolation and adds wall-clock limits to bound timing-channel
       signal &mdash; it does not eliminate microarchitectural side channels.
       Coordinated host-OS mitigations would be required.
@@ -303,7 +303,7 @@ import Project from '../../layouts/Project.astro';
 
   <h2>Implementation</h2>
   <p>
-    Khronos is implemented in Rust (~5,000 lines), split across three crates
+    Kronos is implemented in Rust (~5,000 lines), split across three crates
     (<code>runtime</code>, <code>server</code>, <code>cli</code>). The HTTP
     server uses <code>axum</code> with SQLite for tenant metadata and exposes
     admin endpoints (tenant + API key creation), tenant endpoints (module

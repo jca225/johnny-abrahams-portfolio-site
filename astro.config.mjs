@@ -7,5 +7,6 @@ export default defineConfig({
   build: {
     format: 'directory',
   },
+  redirects: { '/projects/khronos': '/projects/kronos' },
   integrations: [react()],
 });
