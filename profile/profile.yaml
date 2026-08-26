@@ -184,8 +184,8 @@ site:
     runtime. Before Penn: parallel WebAssembly with Prof. Spear at Lehigh, a clinical therapy
     chatbot at New York Brain & Spine Surgery (through March 2026), and a fintech sim with
     61M data points.
-  now: "Penn MS Data Science (GPA 3.62). SWE intern at Ninth Wave. Khronos paper."
-  prev: "NYBSS therapy chatbot (2025-2026). BSCS Lehigh 2025 (GPA 3.65, major 3.75). Dean's list 4 semesters."
+  now: "Penn MS Data Science (GPA 3.62)."
+  prev: "SWE intern at Ninth Wave (summer 2026). Khronos paper (2025). NYBSS therapy chatbot (2025-2026). BSCS Lehigh 2025 (GPA 3.65, major 3.75). Dean's list 4 semesters."
   projects:
     - id: khronos
       featured: true
