@@ -1,23 +1,27 @@
 %% GENERATED from profile/profile.yaml by scripts/build_resume.py. Do not edit.
+%% Layout follows the 2026-09 research brief: 10.5pt body, 0.5in margins,
+%% single column, plain-text links, glyphtounicode for clean text extraction.
 \documentclass[10pt,letterpaper]{article}
-\usepackage[top=0.4in,bottom=0.4in,left=0.55in,right=0.55in]{geometry}
+\usepackage[top=0.5in,bottom=0.5in,left=0.5in,right=0.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage[hidelinks]{hyperref}
+\input{glyphtounicode}
+\pdfgentounicode=1
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
-\linespread{0.94}
-\titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\vspace{-7pt}\rule{\textwidth}{0.4pt}]
-\titlespacing{\section}{0pt}{5pt}{2pt}
+\titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\vspace{-9pt}\rule{\textwidth}{0.4pt}]
+\titlespacing{\section}{0pt}{2pt}{1pt}
 \setlist[itemize]{leftmargin=1.1em, itemsep=0pt, topsep=1pt, parsep=0pt, partopsep=0pt}
-\newcommand{\entry}[2]{\par\vspace{3pt}\begin{tabular*}{\textwidth}{@{}p{0.80\textwidth}@{\extracolsep{\fill}}r@{}}\textbf{#1} & #2\end{tabular*}\par\vspace{-1pt}}
+\newcommand{\entry}[2]{\par\vspace{2pt}\begin{tabular*}{\textwidth}{@{}p{0.83\textwidth}@{\extracolsep{\fill}}r@{}}\textbf{#1} & #2\end{tabular*}\par\vspace{-1pt}}
 \begin{document}
+\fontsize{10.5}{11.4}\selectfont
 
 \begin{center}
-{\LARGE\bfseries <<id.full_name>>}\\[2pt]
-<<id.location>> $\cdot$ <<id.phone>> $\cdot$ \href{mailto:<<id.email>>}{<<id.email>>}\\
+{\LARGE\bfseries <<id.full_name>>}\\[1pt]
+\small <<id.location | tex>> $\cdot$ <<id.phone>> $\cdot$ \href{mailto:<<id.email>>}{<<id.email>>} $\cdot$
 \href{<<id.portfolio_url>>}{<<id.portfolio_url | strip_scheme>>} $\cdot$
 \href{<<id.github_url>>}{<<id.github_url | strip_scheme>>} $\cdot$
 \href{<<id.linkedin_url>>}{<<id.linkedin_url | strip_scheme>>}
@@ -28,12 +32,15 @@
 \section{Education}
 <%- for e in education%>
 \entry{<<e.school | tex>>}{<<e.graduation | tex>>}
-<<e.degree | tex>> $\cdot$ GPA <<e.gpa | tex>><%if e.minor%> $\cdot$ Minor: <<e.minor | tex>><%endif%><%if e.honors%> $\cdot$ <<e.honors | tex>><%endif%>\\
-\textit{Relevant coursework:} <<e.coursework | join(', ') | tex>>
+<<e.degree | tex>> $\cdot$ GPA <<e.gpa | tex>><%if e.minor%> $\cdot$ Minor: <<e.minor | tex>><%endif%><%if e.honors%> $\cdot$ <<e.honors | tex>><%endif%>
+<%- if e.coursework%>\\
+\textit{Coursework:} <<e.coursework | join(', ') | tex>>
+<%- endif%>
 <%- endfor%>
+<%- for s in resume_sections%>
 
-\section{Experience}
-<%- for x in resume_experience%>
+\section{<<s.title | tex>>}
+<%- for x in s.entries%>
 \entry{<<x.org | tex>>, <<x.role | tex>>}{<<x.dates | tex>>}
 \begin{itemize}
 <%- for b in x.bullets%>
@@ -41,8 +48,9 @@
 <%- endfor%>
 \end{itemize}
 <%- endfor%>
-
+<%- endfor%>
 <%if resume_pubs%>
+
 \section{Publications}
 \begin{itemize}
 <%- for p in resume_pubs%>
@@ -53,7 +61,7 @@
 
 \section{Skills}
 <%- for k, v in skills.items()%>
-\textbf{<<k | tex>>:} <<v | join(', ') | tex>>\\
+\textbf{<<k | tex>>:} <<v | join(', ') | tex>><%if not loop.last%>\\<%endif%>
 <%- endfor%>
 
 \end{document}

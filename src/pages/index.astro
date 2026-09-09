@@ -2,10 +2,10 @@
 // Generated from profile/profile.yaml. Edit the YAML, not this file's content.
 import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { profile, resumeExperience } from '../lib/profile';
+import { profile, resumeSections } from '../lib/profile';
 
 const { identity, education, skills, site, publications } = profile;
-const experience = resumeExperience();
+const sections = resumeSections();
 const featured = site.projects.filter((p: any) => p.featured);
 const rest = site.projects.filter((p: any) => !p.featured);
 ---
@@ -39,16 +39,20 @@ const rest = site.projects.filter((p: any) => !p.featured);
     <p>
       <b>{e.school}</b>, {e.graduation}<br />
       {e.degree}. GPA {e.gpa}.{e.minor && ` Minor: ${e.minor}.`}{e.honors && ` ${e.honors}.`}<br />
-      <span class="muted">Coursework: {e.coursework.join(', ')}</span>
+      {e.coursework?.length > 0 && <span class="muted">Coursework: {e.coursework.join(', ')}</span>}
     </p>
   ))}
 
-  <h2>Experience</h2>
-  {experience.map((x: any) => (
-    <p>
-      <b>{x.org}</b>, {x.role}. <span class="muted">{x.dates}</span>
-      <ul>{x.bullets.map((b: string) => <li>{b}</li>)}</ul>
-    </p>
+  {sections.map((s) => (
+    <>
+      <h2>{s.title}</h2>
+      {s.items.map((x: any) => (
+        <p>
+          <b>{x.org}</b>, {x.role}. <span class="muted">{x.dates}</span>
+          <ul>{x.bullets.map((b: string) => <li>{b}</li>)}</ul>
+        </p>
+      ))}
+    </>
   ))}
 
   <hr />

@@ -4,13 +4,21 @@
 #         (3) ai-job-search tailoring (symlinked from ~/Desktop/ai-job-search/documents/cv/)
 # Edit THIS file, then run `npm run resume && npm run build`. Never edit the generated outputs.
 # Tailoring tools may only select/reorder/rephrase from here, never invent facts.
+#
+# Resume rules: the governing policy is ~/Desktop/hq/personal/resume-policy.md (2026-09-09); the
+# evidence behind it is ~/Desktop/hq/personal/resume-research-2026-09.md. Short form: one page;
+# Education, Experience (employment only), Research, Projects, Skills; one idea per bullet, written
+# as a plain spoken sentence, verb first, what changed first, at most one or two numbers with the
+# baseline named; no process trivia (review rounds, test counts, commit counts, ticket numbers);
+# jargon glossed or cut; no em dashes; no pronouns; fit the page by cutting items, never by
+# compressing sentences; honesty caveats stay in, in as few words as possible.
 
 identity:
   full_name: John Abrahams
   email: johnnycabrahams@gmail.com
   phone: "(914) 246-7257"
-  location: "Scarsdale, New York 10583"   # resume header (city/state/zip only)
-  # Full address — used to fill application FORM fields, not shown on the resume.
+  location: "Scarsdale, NY" # resume header: city/state only, no street or zip
+  # Full address is used to fill application FORM fields, never shown on the resume.
   address_street: "12 Sulgrave Road"
   address_city: "Scarsdale"
   address_state: "NY"
@@ -18,107 +26,123 @@ identity:
   portfolio_url: "https://johncabrahams.com"
   linkedin_url: "https://www.linkedin.com/in/john-abrahams-94a04924a"
   github_url: "https://github.com/jca225"
-  # Set to "" to omit the summary line from the resume.
-  summary: "Software engineer and M.S.E. Data Science candidate (UPenn, Dec 2026) who builds production ML and low-latency systems end-to-end, across Rust, Python, Java, and C++."
+  # Summary line is omitted on purpose (CMU: "optional and in most cases not needed";
+  # Google recruiter: remove it). Set to a single factual line if a posting wants one.
+  summary: ""
 
 # Verified against the official (unofficial) UPenn transcript, 2026-06-09.
-# Penn courses were previously mis-listed under Lehigh. Fall 2026 courses are
-# in progress — listing planned coursework is standard for an expected degree.
+# Fall 2026 courses (Theory of ML, Emerging Theory of LLMs) are in progress; listing
+# planned coursework for an expected degree is standard. Coursework is capped at 5 and
+# limited to courses that name a skill the rest of the resume does not show.
 education:
   - school: "University of Pennsylvania, School of Engineering and Applied Science"
     degree: "M.S.E. in Data Science"
-    graduation: "December 2026"
-    gpa: "3.62"
-    # Completed courses only. Fall 2026 plan is 3 of: Networked Neuroscience,
-    # Quantum Mechanics I, NeuroAI, Theory of ML — TODO(john): add the three
-    # here once enrollment is final.
+    graduation: "Expected December 2026"
+    gpa: "3.62/4.0"
     coursework:
-      - "Probability Theory (Ph.D. course)"
-      - "Advanced Topics in Operating Systems"
-      - "Advanced Topics in Computer Architecture"
-      - "Big Data Analytics"
-      - "Theoretical & Computational Neuroscience"
-      - "Smart Devices"
+      - "Theory of Machine Learning"
+      - "Emerging Theory of Large Language Models"
+      - "Advanced Operating Systems"
   - school: "Lehigh University, P.C. Rossin College of Engineering and Applied Science"
-    degree: "B.S. Computer Science & Engineering"
+    degree: "B.S. in Computer Science and Engineering"
     graduation: "May 2025"
-    gpa: "3.65 (Major 3.75)"
-    minor: "Probability & Statistics"
-    honors: "Dean's List Spring 2023 – Spring 2025"
-    coursework:
-      - "Applied Machine Learning"
-      - "Blockchain and Database Systems"
+    gpa: "3.65/4.0 (major 3.75)"
+    minor: "Probability and Statistics"
+    honors: "" # Dean's List, Spring 2023 to Spring 2025; omitted from the resume for space
+    coursework: [] # undergrad coursework adds nothing next to the projects; kept empty on purpose
 
 skills:
-  Languages: [Python, Rust, Go, Java, "C++", C, WebAssembly]
-  Machine Learning: [PyTorch, "Reinforcement Learning", "GRU/sequence models", LLMs, NLP]
-  Systems: [AWS, FastAPI, "Spring Boot", "embedded/ESP32", "multithreading", concurrency]
-  Data: ["probability & statistics", regression, SVM, "EM algorithm"]
+  Languages: [Python, Rust, TypeScript, Java, "C++", Go]
+  Machine Learning:
+    [
+      PyTorch,
+      "LoRA fine-tuning",
+      "contrastive learning",
+      "reinforcement learning",
+      MERT,
+    ]
+  Systems:
+    [
+      WebAssembly,
+      "AWS CDK",
+      "Spring Boot",
+      FastAPI,
+      MCP,
+      "AWS (Bedrock, S3, Lambda)",
+      "Kubernetes (K3s)",
+    ]
 
-# Experience bullet bank. Tailor picks the most relevant bullets per posting.
-# `tags` let the scorer/tailor match bullets to a job's keywords.
+# Experience bullet bank. The resume picks from it via `resume.sections` below; the
+# tailor may pick differently per posting. Every number here has a source on disk:
+# see the 2026-09-08 sweep summarized in ~/Desktop/hq/personal/resume-research-2026-09.md.
 experience:
-  # Bullets follow the Harvard MCS resume guide: verb-first, active voice,
-  # accomplishment (not duty) framed, quantified with REAL numbers only, no
-  # pronouns. See [[reference-resume-style]]. Numbers marked nowhere are not
-  # invented — add real metrics where flagged in that memo.
-  - id: dj-rl
-    org: "DJ Reinforcement Learning System"
-    role: "Researcher / Builder"
-    dates: "Aug 2025 – Dec 2025"
-    kind: research
-    tags: [rl, embedded, ml, sequence, full-stack, sensors, 0-to-1]
-    bullets:
-      - "Engineered a distributed wireless sensor network of ESP32-S2 nodes (audio, thermal, environmental) streaming real-time crowd-engagement telemetry to a Raspberry Pi controller."
-      - "Trained a 2M-parameter GRU sequence model with a reinforcement-learning head that predicts next-song transitions and adapts selection to live audience feedback."
-      - "Assembled a 2,000+ DJ-set training corpus with a custom Python scraper and audio-metadata preprocessing pipeline."
-      - "Delivered an end-to-end system linking embedded hardware, Python services, and a real-time DJ control GUI over WiFi."
-
-  - id: kronos
-    org: "Kronos: Multi-Tenant WebAssembly Runtime"
-    role: "UPenn Research (Prof. Sebastian Angel)"
-    dates: "Oct 2024 – Present"
-    kind: research
-    tags: [systems, rust, webassembly, concurrency, security, runtime, performance]
-    bullets:
-      - "Built Kronos, a multi-tenant WebAssembly runtime in Rust (~5K lines) that packs tenants ~20× denser than Docker (~0.08 MiB per isolate) using exokernel-style capability gating with per-invocation fuel and wall-clock budgets."
-      - "Engineered a work-stealing thread pool that dispatches guest pthread_create calls for shared-memory data parallelism, reaching 6.7× speedup on four cores."
-      - "Exposed a tiered ~74-entry capability-gated host interface; benchmarked against the wasmtime and wazero runtimes on C++ kernels (matmul, k-means, SVD) and co-authored a 9-page systems paper introducing the resulting 'Type II exovisor' abstraction."
-
-  - id: capstone
-    org: "Capstone Document Search System"
-    role: "Senior Capstone, Lehigh University"
-    dates: "May 2024 – July 2025"
+  # ---------------- employment ----------------
+  - id: ninth-wave
+    org: "Ninth Wave"
+    role: "Software Engineer Intern, AI Team"
+    dates: "May 2026 – Aug 2026"
+    location: "Remote"
     kind: work
-    tags: [full-stack, search, nlp, aws, indexing, capstone, shipping]
+    tags:
+      [
+        fintech,
+        typescript,
+        mcp,
+        java,
+        spring-boot,
+        aws,
+        bedrock,
+        llm,
+        python,
+        internship,
+        finance,
+      ]
+    # Order follows John's final deck (ninth_wave/final-presentation): onboarding generator,
+    # living documentation, the AI gateway, the production portal. Sources per item are in
+    # memory note project_ninth_wave_internship.
     bullets:
-      - "Engineered a full-stack search engine over 23,000+ Dropbox documents on AWS for fast, sentence-level content retrieval."
-      - "Built an NLP indexing pipeline that parses heterogeneous file types and segments content at the sentence level for granular highlight extraction."
-      - "Integrated the Dropbox API with partitioned indexing and keyword-to-sentence mapping for real-time access and match highlighting."
+      # 0 FI Factory. Source: product-platform-main/cdk/factory/README.md (2026-08-07, by John);
+      #   the "ten hand edits, 3 of 3 banks" context is product-platform-main/DECISIONS.md
+      #   2026-06-10 (NA-1147). The catalog of what each bank's slice contains is still open.
+      - "Built a generator that turns one YAML file per bank into that bank's AWS stacks. Onboarding had meant about ten hand edits per bank, and all three production banks had shipped with a routing defect."
+      # 1 Living documentation (Paul Short's project; John built the pipelines and the site).
+      #   Source: documentation-automation/LOG.md (Phase 1 code-complete, 0% deployed 2026-08-11)
+      #   and documentation-automation/system-scan/README.md (the daily scan, built not deployed).
+      - "Built the pipelines behind self-updating documentation: a weekly Lambda that reads the AWS accounts and rewrites the docs with Bedrock, and a scanner that drafts updates when code changes. Tested but not yet deployed."
+      # 2 Studio. Source: studio-mcp-ts/README.md.
+      - "Built Studio, a gateway that lets an AI agent call any internal app through one MCP endpoint, with one set of rules for who may do what. Rewrote it after security review found two ways a caller could act as someone else."
+      # 3 Production portal. Source: the deck (eleven changes) and Flight-Deck git log
+      #   (NA-964 S3 browser, NA-971, NA-1065 white-label, NA-1207, NA-1731 timeline).
+      - "Shipped eleven changes to the Spring Boot portal that banks log into: an activity timeline with channels and search, a browser for the files banks keep in S3, and documentation white-labeled per bank."
+      # ---- bank only from here ----
+      # 4 The Phase 2 daily scan (system-scan/README.md): a SAM package, built but not deployed.
+      - "Built a daily scan of the Compass AWS account that diffs the account against yesterday in code and has Bedrock rank and narrate the changes into a plain-language report."
+      # 5 The Studio review in detail (process facts; use only for QA or security postings).
+      - "The first version of Studio, in Python, went through five rounds of adversarial review that found 31 issues, two of them complete authentication bypasses. The TypeScript rewrite designs those out and runs 325 tests and 28 mutation checks on every change."
+      # 6 fs-match memo, 2026-07-26 (~/Desktop/ninth_wave/fs-match/MEMO.md). The reviewed memo
+      #   withdraws the modelling numbers (99.0% vs 89.7% top-1, 17% of the queue at zero errors)
+      #   because the test set had at most two real institutions behind five identifiers and the
+      #   zero-error result was 0 of 20 decisions. Do not quote those numbers. The finding that
+      #   survived is below.
+      - "Tested whether a record-linkage score could safely auto-accept some of the AI's bank-field mappings, and found first that the confidence number Compass stores is not a confidence: two code paths write hardcoded constants. Recommended one telemetry change that makes the question answerable."
+      # 7 to 9 are bank-only because the deck ranks them below the four page items: the paper is
+      #   writing rather than building, the bank-API tooling has no measured result, and
+      #   aws-circuits was a lab exercise that is now archived.
+      - "Wrote the technical paper for Compass, the open-finance onboarding agent on Amazon Bedrock AgentCore, from one LaTeX source that builds a systems-paper and a product-doc variant, and corrected six claims the code did not support."
+      - "Built Python LLM tooling for mapping bank APIs to the canonical data model and for drafting RFP responses across ERP integrations (Xero, NetSuite, QuickBooks)."
+      - "Modeled the lab AWS estate as typed data and control circuits in TypeScript, with a read-only sweep of the live account rendered to an interactive diagram. Illegal wiring, such as an IAM role feeding a database, is a compile error."
 
   - id: nybss-swe
     org: "New York Brain & Spine Surgery"
-    role: "Software Engineer"
-    dates: "May 2025 – March 2026"
+    role: "Software Engineer" # the 2023 research-associate stint is stated in the study bullet
+    dates: "May 2025 – Mar 2026"
     location: "White Plains, NY"
     kind: work
     tags: [llm, fastapi, backend, multi-agent, healthcare, full-stack, shipping]
     bullets:
-      - "Built a production therapy chatbot on LLaMA and FastAPI, blending rule-based clinical workflows with LLM-generated responses."
-      - "Designed a configurable multi-agent architecture supporting multiple mental-health conditions and rapid prompt iteration."
-      - "Developed backend APIs and state management powering safe, real-time conversational flows and fast end-to-end iteration."
-
-  - id: ninth-wave
-    org: "Ninth Wave"
-    role: "Software Engineer Intern, Compass (open-finance AI onboarding)"
-    dates: "May 2026 – Aug 2026"
-    kind: work
-    tags: [fintech, java, spring-boot, aws, llm, python, code-generation, research, internship, finance]
-    bullets:
-      - "Researching a two-model code-generation system for Compass, Ninth Wave's open-finance onboarding agent: an HRM-Text recursive executive that plans and writes structured outputs over a MeMo parametric memory trained on internal documentation, replacing RAG and prompt engineering with learned memory."
-      - "Authored the project's phased rollout plan and PM approval brief: shadow evaluation against the production AWS Bedrock agents on golden test sets, tiered pilot training with go/no-go gates, and a Python sidecar integration that leaves the Java Flight-Deck in control of auth and API execution."
-      - "Contributed to Flight-Deck (Java/Spring Boot developer portal) and the Compass agent on Amazon Bedrock AgentCore, working across AWS (Secrets Manager, OpenSearch, Bedrock)."
-      - "Built Python LLM tooling for bank-API-to-canonical-model mapping and automated RFP response generation across ERP integrations (Xero, NetSuite, QuickBooks)."
+      - "Built a production therapy chatbot on LLaMA and FastAPI. Clinical rules control the flow of each conversation and the model writes the replies, so one system covers several conditions."
+      - "Wrote the backend APIs and the conversation state handling behind the chat, so prompts could be changed and tested quickly."
+      - "Co-authored a study of outcomes for 236 spinal-fusion patients as a research associate there in 2023."
 
   - id: quant-game
     org: "The Quant Game"
@@ -127,8 +151,7 @@ experience:
     kind: work
     tags: [quant, full-stack, react, aws, finance, data, startup, 0-to-1]
     bullets:
-      - "Co-founded and built a full-stack options-strategy simulator (React, Python) delivering real-time backtests and performance metrics."
-      - "Architected an AWS data layer storing and serving 61M+ financial data points at high availability."
+      - "Co-founded and built a full-stack options-strategy simulator (React, Python) with real-time backtests, on an AWS data layer serving 61M+ financial data points."
 
   - id: nybss-research
     org: "New York Brain & Spine Surgery"
@@ -141,37 +164,171 @@ experience:
       - "Modeled post-surgical patient outcomes with logistic regression and support vector machines across a 100-patient ACDF cohort."
       - "Benchmarked missing-data imputation methods (EM algorithm, regression) to improve dataset completeness for downstream modeling."
 
-  - id: tracklist
-    org: "Tracklist Engine"
-    role: "Independent"
-    dates: "2026 – Present"   # TODO(john): confirm start month
-    kind: project
-    tags: [ml, audio, transformers, data, pipeline, python, sqlite, music]
+  - id: capstone
+    org: "Capstone Document Search System"
+    role: "Senior Capstone, Lehigh University"
+    dates: "May 2024 – Jul 2025"
+    kind: work
+    tags: [full-stack, search, nlp, aws, indexing, capstone, shipping]
     bullets:
-      - "Built a multi-stage audio-ML pipeline (scrape, ingest, analysis, labeling, alignment) that reconstructs how recorded DJ mixes are assembled from their source tracks, persisting works, recordings, stems, and per-measure analyses in a normalized SQLite schema."
-      - "Integrated DETR-based cue-point detection, Demucs source separation, and MERT music-transformer embeddings for measure-level audio analysis across sets and tracks."
-      - "Designed an Ableton-round-trippable ground-truth labeling workflow that turns manually aligned DJ sets into training data for a learned tracklist-to-audio alignment model."
+      - "Engineered a full-stack search engine over 23,000+ Dropbox documents on AWS for fast, sentence-level content retrieval."
+      - "Built an NLP indexing pipeline that parses heterogeneous file types and segments content at the sentence level for granular highlight extraction."
 
-  - id: trading-bot
-    org: "Systematic Trading Bot"
-    role: "Independent"
-    dates: "Apr 2026 – Present"
-    kind: project
-    tags: [quant, finance, aws, python, backtesting, systematic, trading]
+  # ---------------- research ----------------
+  - id: kronos
+    org: "Kronos: WebAssembly Runtime"
+    role: "UPenn (advisor: Prof. Sebastian Angel)"
+    dates: "Oct 2024 – Present"
+    kind: research
+    tags:
+      [systems, rust, webassembly, concurrency, security, runtime, performance]
     bullets:
-      - "Built a systematic daily-rebalance U.S. ETF momentum strategy on the Alpaca API, validated through a vectorbt backtesting harness."
-      - "Automated live paper trading on AWS EC2 with Secrets Manager and systemd timers for unattended daily execution."
+      # Sources: public/papers/kronos.pdf (0.08 MiB per isolate, roughly 20x denser than Docker,
+      # up to 6.7x on four cores) and memory note project_kronos_plan (kronoslabs.dev).
+      - "Built a WebAssembly runtime in Rust that runs many tenants in one process. Each tenant costs about 0.08 MiB of memory, about a twentieth of a Docker container, and gets its own CPU and wall-clock budget."
+      - "Wrote a work-stealing thread pool for guest threads. Matrix multiply runs up to 6.7x faster on four cores."
+      - "Co-wrote a nine-page paper on the design with Ajax Li (unpublished)."
+      - "Turned the runtime into kronoslabs.dev, a live site where a plain-language request becomes a sandboxed app."
+
+  - id: deployed-learning
+    org: "Learning After Deployment"
+    role: "independent research"
+    dates: "Sep 2026 – Present"
+    kind: research
+    tags:
+      [
+        research,
+        llm,
+        fine-tuning,
+        lora,
+        distillation,
+        continual-learning,
+        forgetting,
+        pytorch,
+      ]
+    bullets:
+      # Sources: ~/Desktop/deployed-learning/STATUS.md and docs/RESEARCH-STATE.md (ledger C3 to C10,
+      # 2026-09-04 to 09-09). "A third as much" is the C5 matched-recall ratio on Pythia-410M; at
+      # 1B the ratio is 4 to 5x (C6). Near-zero forgetting is C8 (+0.02 nats at 0.97 accuracy on
+      # 410M, +0.006 at 1B). All on a synthetic fact benchmark; nothing posted yet.
+      - "Studying how a deployed language model should learn new facts without forgetting what it already knows. The method: train the model to reproduce what it would have said with the fact in its prompt."
+      - "Found on Pythia-410M that this stores the fact itself rather than the sentence it came from, and forgets about a third as much as ordinary fine-tuning at the same recall. The result holds at 1B."
+      - "Added a penalty for drift on unrelated text, which brought forgetting to near zero while the model still answered 97% of questions about the new facts. Synthetic facts only so far; unpublished."
+      # bank: averaging the teacher over question wordings (C5)
+      - "Averaging the teacher over eight phrasings of each question raised held-out recall of the new facts from about 0.6 to between 0.82 and 0.91."
+
+  - id: jspace-hrm
+    org: "Recurrent Reasoning Grafts in Frozen Language Models"
+    role: "independent research"
+    dates: "Jul 2026 – Sep 2026"
+    kind: research
+    tags:
+      [
+        research,
+        llm,
+        hrm,
+        trm,
+        recursion,
+        lora,
+        pytorch,
+        negative-result,
+        gpu-infra,
+      ]
+    bullets:
+      # Sources: memory note project_jspace_hrm (C43/C44 LoRA wins; C49 from-scratch control) and
+      # ~/workspace/jspace-hrm/docs/paper-negative-result.md (draft, unposted).
+      - "Tested whether adding a small recurrent reasoning module inside a frozen language model beats plain LoRA fine-tuning on multi-hop questions. It does not: LoRA won every test by 0.4 to 0.85 in accuracy across three seeds."
+      - "Ran the control that could have rescued the idea: trained from scratch, the same blocks score higher when run once than when run in a loop. Wrote it up as a draft paper, unpublished."
+      # bank
+      - "Kept a ledger of 49 claims for the write-up, each tied to the experiment that settled it."
 
   - id: neurovariety
     org: "neurovariety (open source)"
     role: "Author"
-    dates: "Apr 2026 – Present"
+    dates: "Apr 2026 – Jun 2026"
     kind: research
-    tags: [research, machine-learning, rust, python, algebraic-geometry, oss, theory]
+    tags:
+      [
+        research,
+        machine-learning,
+        rust,
+        python,
+        algebraic-geometry,
+        oss,
+        theory,
+      ]
     bullets:
       - "Authored an open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias."
-      - "Built the performance-critical core in Rust behind a Python API; shipped MIT-licensed with continuous integration."
 
+  # ---------------- projects ----------------
+  - id: dj-copilot
+    org: "DJ Copilot"
+    role: "independent audio-ML project"
+    dates: "Jul 2026 – Present"
+    kind: project
+    tags:
+      [
+        ml,
+        audio,
+        transformers,
+        contrastive,
+        data,
+        pipeline,
+        python,
+        music,
+        mert,
+      ]
+    bullets:
+      # Sources: memory note project_dj_copilot (Phase 3: honest model level ~4.55% vs the 6.937%
+      # counting bar) and ~/Desktop/dj_copilot/STATUS.md headline table (base 9.78 / cold 3.14;
+      # month feature 13.45 / 7.77; month-shuffle control 9.76 / 3.28; 283 months of plays).
+      - "Embedded 42,397 tracks with a music transformer (MERT) and trained a model to predict the next track in a DJ set from 1.07M examples. It lost to a simple count of what usually follows each track (4.6% vs 6.9% recall@10)."
+      - "Added features for what the DJ community was playing each month, which more than doubled recall@10 for tracks with no play history, from 3.1% to 7.8%. Shuffling the months erased the gain, so the effect is timing, not fame."
+      # bank: the same month features lifted overall validation recall@10 from 9.8% to 13.5%;
+      # a v1.5 feature set plus a DJ-by-artist affinity feature reached 14.1% overall and 8.7% cold.
+      - "The month features, built from 283 months of plays, lifted overall validation recall@10 from 9.8% to 13.5%; adding a feature for how much each DJ had played the artist before reached 14.1% overall and 8.7% for tracks with no play history."
+
+  - id: dj-rl
+    org: "DJ Reinforcement Learning System"
+    role: "UPenn ESE 519, with Chris Spletzer"
+    dates: "Aug 2025 – Dec 2025"
+    kind: project
+    tags: [rl, embedded, ml, sequence, full-stack, sensors, 0-to-1]
+    bullets:
+      - "Built a WiFi mesh of ESP32 sensor nodes measuring sound, heat, and air in a room, streaming to a Raspberry Pi."
+      - "Trained a 2M-parameter GRU on 2,000+ scraped DJ sets to predict the next track, plus a reinforcement-learning head that adjusts to the live sensor readings."
+
+  - id: compute-cluster
+    org: "Home Compute Cluster"
+    role: "Independent"
+    dates: "Aug 2026"
+    kind: project
+    tags:
+      [
+        kubernetes,
+        k3s,
+        infra,
+        devops,
+        monitoring,
+        raspberry-pi,
+        sops,
+        tailscale,
+      ]
+    bullets:
+      - "Built a mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook as the amd64 node) with SOPS-encrypted secrets, scheduled datastore snapshots with a verified restore, and Grafana, Loki, and Alloy over Tailscale; it runs the unattended crawl and embedding jobs above."
+
+  - id: tracklist
+    org: "Tracklist Engine"
+    role: "Independent"
+    dates: "Jan 2026 – Aug 2026"
+    kind: project
+    tags: [ml, audio, data, pipeline, python, rust, sqlite, music, provenance]
+    bullets:
+      - "Built a provenance-first DJ-set alignment engine (Rust kernel, Python sensors, content-addressed artifacts, SQLite provenance) over a 41,492-set, 1.24M-slot corpus; an integrity re-parse of all cached pages ran with zero failures and 99.969% key agreement."
+      - "Integrated DETR-based cue-point detection, Demucs source separation, and MERT embeddings for measure-level audio analysis across sets and tracks."
+
+  # trading-bot is deliberately NOT here. It never ran (no service, no EC2, see memory
+  # project-tradingbot); the old "automated live paper trading on EC2" bullet was untrue.
 
 # Website-only presentation for experience items (by id). Items with an entry
 # here appear on the site; `page` links to a case-study page, `featured` puts
@@ -179,25 +336,44 @@ experience:
 site:
   headline: "MS in Data Science, University of Pennsylvania, 2026. BS in Computer Science & Engineering, Lehigh University, 2025."
   bio: >-
-    Currently a master's student in Data Science at Penn and a software engineer intern at
-    Ninth Wave (open-finance fintech). Co-author of Kronos, a multi-tenant WebAssembly
-    runtime. Before Penn: parallel WebAssembly with Prof. Spear at Lehigh, a clinical therapy
-    chatbot at New York Brain & Spine Surgery (through March 2026), and a fintech sim with
-    61M data points.
+    Master's student in Data Science at Penn (graduating December 2026). Co-author of Kronos,
+    a multi-tenant WebAssembly runtime, now live at kronoslabs.dev. Summer 2026 software
+    engineer intern at Ninth Wave (open-finance fintech), where I built the generator that
+    onboards a bank from one YAML file, the pipelines behind self-updating documentation, and
+    an OpenAPI-to-MCP gateway. Current research: a principled weight-update rule for deployed
+    language models.
+    Before Penn: a clinical therapy chatbot at New York Brain & Spine Surgery and a fintech
+    sim with 61M data points.
   now:
-    - "Penn MS Data Science (GPA 3.62)"
+    - "Penn MS Data Science (GPA 3.62), graduating Dec 2026"
+    - "Learning-after-deployment research (context distillation)"
+    - "Kronos at kronoslabs.dev"
   prev:
     - "SWE intern at Ninth Wave (summer 2026)"
+    - "Recurrent reasoning grafts: a negative result (2026)"
     - "Kronos paper (2025)"
     - "NYBSS therapy chatbot (2025-2026)"
-    - "BSCS Lehigh 2025 (GPA 3.65, major 3.75), Dean's list 4 semesters"
+    - "BSCS Lehigh 2025 (GPA 3.65, major 3.75), Dean's list"
   projects:
     - id: kronos
       featured: true
       page: /projects/kronos
       title: "Kronos: A Type II Exovisor with WebAssembly"
-      tags: "2025. Rust. Co-authored paper."
-      blurb: "A multi-tenant runtime that combines WebAssembly's sandbox with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime); up to 6.7x speedup on dense matmul while preserving per-tenant trap containment."
+      tags: "2025 to present. Rust. Co-authored paper. Live at kronoslabs.dev."
+      blurb: "A multi-tenant runtime that combines WebAssembly's sandbox with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime); up to 6.7x speedup on dense matmul while preserving per-tenant trap containment. Since July 2026 it also backs kronoslabs.dev, a service where a build turn yields a capability-gated app shareable by link."
+    - id: deployed-learning
+      featured: true
+      title: "Learning After Deployment"
+      tags: "Sep 2026 to present. LLMs. Context distillation, LoRA, Pythia."
+      blurb: "What objective should update a deployed language model's weights from new experience? The bet is context distillation under a KL forgetting constraint. On Pythia-410M and 1B: distillation stores facts rather than strings and forgets about a third as much as raw-text fine-tuning at matched recall; adding the replay term brings forgetting to near zero at 0.97 fact accuracy. Synthetic facts so far."
+    - id: jspace-hrm
+      title: "Recurrent Reasoning Grafts: A Negative Result"
+      tags: "Jul to Sep 2026. LLMs. TRM/HRM, LoRA, Vast.ai."
+      blurb: "Does a TRM-style recurrent module grafted into a frozen LM beat parameter-matched LoRA on multi-hop composition? No: LoRA won every held-out probe by 0.4 to 0.85 absolute accuracy across three seeds. Written up with a 49-claim evidence ledger and from-scratch controls."
+    - id: dj-copilot
+      title: "DJ Copilot"
+      tags: "2026. Audio ML. MERT, contrastive next-track model."
+      blurb: "42,397 tracks embedded with MERT-v1-330M over a 1.07M-event corpus of DJ sets. Track-level modeling lost to an adjacency-count baseline (4.6% vs 6.9% recall@10). Time-indexed features for what the DJ community was playing each month then lifted validation recall@10 from 9.8% to 13.5%, and cold-track recall from 3.1% to 7.8%; a month-shuffle control returns the base, so the effect is timing, not fame."
     - id: dj-rl
       featured: true
       page: /projects/dj-rl-system
@@ -206,20 +382,16 @@ site:
       blurb: "A wireless ESP32-S2 sensor mesh (environmental, audio, thermal) that streams crowd-engagement metrics to a Raspberry Pi controller. A 2M-parameter GRU pretrained on ~3,000 DJ sets predicts the next song; an RL head adapts to live sensor feedback. Built with Chris Spletzer for UPenn ESE 519."
     - id: ninth-wave
       title: "Ninth Wave: Software Engineer Intern"
-      tags: "Summer 2026. Fintech. Java/Spring, AWS, Python LLM tooling."
-      blurb: "Summer 2026 SWE internship at an open-finance fintech. Built Python LLM tooling for bank-API-to-canonical-model mapping and automated RFP generation across ERP integrations (Xero, NetSuite, QuickBooks), and contributed to a Java/Spring Boot developer portal and an AWS Bedrock onboarding agent (Secrets Manager, OpenSearch)."
-    - id: trading-bot
-      title: "Systematic Trading Bot"
-      tags: "2026. Python, Alpaca, AWS, backtesting."
-      blurb: "A systematic daily-rebalance U.S. ETF momentum strategy on the Alpaca API, validated through a vectorbt backtesting harness. Runs unattended live paper trading on AWS EC2 with Secrets Manager and systemd timers."
-    - id: neurovariety
-      title: "neurovariety: Open-Source ML Library"
-      tags: "2026. Rust + Python. Algebraic geometry. MIT license."
-      blurb: "An open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias. Performance-critical core in Rust behind a Python API, MIT-licensed with CI."
+      tags: "Summer 2026. Fintech. AWS CDK, living documentation, MCP gateway, Spring Boot."
+      blurb: "Automated bank onboarding onto Compass's AWS platform with a CDK generator (one YAML file per bank), built the pipelines behind Ninth Wave's self-updating documentation, built Studio (an OpenAPI-to-MCP gateway for internal apps), and shipped eleven changes to the Spring Boot portal banks log into."
+    - id: compute-cluster
+      title: "Home Compute Cluster"
+      tags: "Aug 2026. K3s, Raspberry Pi, SOPS, Grafana."
+      blurb: "A mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook) with encrypted secrets, verified snapshot restores, and monitoring over Tailscale. Runs the unattended crawl and embedding jobs for the music projects."
     - id: tracklist
       title: "Tracklist Engine"
-      tags: "2026. Audio ML. PyTorch, DETR, Demucs, MERT."
-      blurb: "A multi-stage audio-ML pipeline (scrape, ingest, analysis, labeling, alignment) that reconstructs how recorded DJ mixes are built from their source tracks. Combines DETR cue-point detection, Demucs source separation, and MERT music-transformer embeddings over a normalized SQLite schema."
+      tags: "2026. Audio ML. Rust + Python, DETR, Demucs, MERT."
+      blurb: "A provenance-first DJ-set alignment engine over a 41,492-set corpus. Combines DETR cue-point detection, Demucs source separation, and MERT music-transformer embeddings over a normalized SQLite schema."
     - id: nybss-swe
       page: /projects/therapy-chatbot
       title: "Clinical Therapy Chatbot"
@@ -235,6 +407,10 @@ site:
       title: "Dropbox Document Search Engine"
       tags: "2024. Capstone. NLP + AWS."
       blurb: "A search engine for ~23,000 Dropbox documents, with sentence-level highlight extraction. Partitioned indexing + Dropbox API integration for real-time access. Lehigh capstone for an early-stage startup."
+    - id: neurovariety
+      title: "neurovariety: Open-Source ML Library"
+      tags: "2026. Rust + Python. Algebraic geometry. MIT license."
+      blurb: "An open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias."
     - id: hangover
       page: /hangover
       title: "Hangover Simulator"
@@ -246,12 +422,20 @@ publications:
     title: "Kronos: A Type II Exovisor Architecture with WebAssembly"
     year: 2025
     with: "with Ajax Li"
-    meta: "2025. With Ajax Li. IEEE format, 9 pp."
+    meta: "2025. With Ajax Li. IEEE format, 9 pp. Unpublished manuscript."
     pdf: /papers/kronos.pdf
     page: /projects/kronos
     github: https://github.com/jca225/webAssembly_Interpreter
     abstract: "A multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime, 18x denser than Docker); up to 6.7x speedup on dense matrix multiply while preserving per-tenant trap containment."
     on_resume: true
+  - id: jspace-paper
+    title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace Is Dominated by LoRA: A Negative Result"
+    short_title: "Recurrent Reasoning Grafts Are Dominated by LoRA: A Negative Result"
+    year: 2026
+    with: "sole author, draft"
+    meta: "2026. Sole author. Draft, not yet posted."
+    abstract: "A TRM-style recurrent module grafted into a frozen language model's middle layers, trained on multi-hop entity composition, is beaten by a parameter-matched LoRA on every held-out probe by 0.4 to 0.85 absolute accuracy across three seeds. Neither method extrapolates past trained depth. Includes a 49-claim evidence ledger and four reusable measurement findings."
+    on_resume: false
   - id: acdf
     title: "A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling"
     short_title: "Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)"
@@ -279,13 +463,23 @@ publications:
     abstract: "The sentence-level highlight extractor at the heart of my Lehigh capstone search engine. Given a query and a matched sentence, surface the minimal sub-span that explains the match. Deceptively non-trivial when the query is multi-word, partially stop-worded, or syntactically interleaved with the matched sentence."
     on_resume: false
 
-# Resume layout: which experience ids, in what order. Everything else in
-# `experience` stays available to the tailor but is not on the default resume.
+# Resume layout. Sections render in order; each lists experience ids in order.
+# Publications are attached to their research entries in the bullets, so
+# include_publications stays false (no standalone heading until something is accepted).
 resume:
-  include_publications: false   # flip to true if a one-page fit allows
-  experience_order: [nybss-swe, ninth-wave, kronos, quant-game, trading-bot, capstone]
+  include_publications: false
+  sections:
+    - title: Experience
+      ids: [ninth-wave, nybss-swe]
+    - title: Research
+      ids: [kronos, deployed-learning, jspace-hrm]
+    - title: Projects
+      ids: [dj-copilot] # dj-rl, compute-cluster, tracklist stay in the bank; swap in for embedded, infra, or audio postings
   # per-id bullet selection for the one-page resume: an int = first N bullets,
   # a list = those 0-based indices, omitted = all bullets.
   bullet_limit:
-    ninth-wave: [0, 2, 3]
-    capstone: 2
+    ninth-wave: [0, 1, 2, 3] # bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
+    nybss-swe: [0, 2] # bullet 1 (backend APIs) stays in the bank
+    deployed-learning: [0, 1, 2] # bullet 3 (teacher averaging) stays in the bank
+    jspace-hrm: [0, 1] # bullet 2 (49-claim ledger) stays in the bank
+    dj-copilot: [0, 1] # bullet 2 (overall recall and the DJ-affinity feature) stays in the bank

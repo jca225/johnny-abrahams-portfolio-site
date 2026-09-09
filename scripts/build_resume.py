@@ -28,12 +28,14 @@ def main():
     d = yaml.safe_load(PROFILE.read_text())
     by_id = {e["id"]: e for e in d["experience"]}
     limits = d["resume"].get("bullet_limit", {})
-    exp = []
-    for i in d["resume"]["experience_order"]:
+    def pick(i):
         e = dict(by_id[i]); sel = limits.get(i)
         if isinstance(sel, int): e["bullets"] = e["bullets"][:sel]
         elif isinstance(sel, list): e["bullets"] = [e["bullets"][k] for k in sel]
-        exp.append(e)
+        return e
+    # `sections` (title + ids) is the layout; legacy `experience_order` = one Experience section.
+    sections = d["resume"].get("sections") or [{"title": "Experience", "ids": d["resume"]["experience_order"]}]
+    sections = [{"title": s["title"], "entries": [pick(i) for i in s["ids"]]} for s in sections]
     pubs = [p for p in d.get("publications", []) if p.get("on_resume")] if d["resume"].get("include_publications") else []
 
     env = jinja2.Environment(
@@ -45,7 +47,7 @@ def main():
     env.filters["tex"] = tex; env.filters["strip_scheme"] = strip_scheme
     src = env.from_string((ROOT / "scripts" / "resume.tex.j2").read_text()).render(
         id=d["identity"], education=d["education"], skills=d["skills"],
-        resume_experience=exp, resume_pubs=pubs)
+        resume_sections=sections, resume_pubs=pubs)
 
     BUILD.mkdir(exist_ok=True)
     (BUILD / "resume.tex").write_text(src)
