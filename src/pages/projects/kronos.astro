@@ -8,7 +8,6 @@ import Project from '../../layouts/Project.astro';
   meta="Technical report, 2026 · with Ajax Li · Rust"
   links={[
     { label: 'Technical report (PDF)', href: '/papers/kronos.pdf', external: true },
-    { label: 'Source on GitHub', href: 'https://github.com/jca225/webAssembly_Interpreter', external: true },
   ]}
   description="Kronos is a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's capabilities before instantiating it. Technical report by John Abrahams and Ajax Li, University of Pennsylvania."
 >
@@ -80,8 +79,9 @@ import Project from '../../layouts/Project.astro';
   <p>
     This runtime is the research ancestor of
     <a href="https://kronoslabs.dev">kronoslabs.dev</a>, which now uses a
-    different authority model built on WASI preopened directories. The report
-    pins the code it describes to commits in the repository history.
+    different authority model built on WASI preopened directories. The code is
+    in a private repository and is available on request; the report names the
+    exact commits it describes.
   </p>
 
   <p class="muted">

@@ -346,7 +346,6 @@ publications:
     meta: "2026. With Ajax Li. Technical report, 6 pp. Unpublished."
     pdf: /papers/kronos.pdf
     page: /projects/kronos
-    github: https://github.com/jca225/webAssembly_Interpreter
     abstract: "A multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation, with fuel and wall-clock budgets on every call. The report audits every instantiation path, finding the check enforced on the server path and skipped or weakened on two library paths, and measures about 0.15 MiB of memory per added isolate. It supersedes an April 2026 draft."
     on_resume: true
     home: true
