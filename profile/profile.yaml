@@ -2,6 +2,7 @@
 # Feeds:  (1) the website  (src/pages/index.astro, src/pages/writing.astro read this at build)
 #         (2) the resume   (scripts/build_resume.py -> public/resume.pdf)
 #         (3) ai-job-search tailoring (symlinked from ~/Desktop/ai-job-search/documents/cv/)
+# This repo is PUBLIC. Items that must not be public live in ~/Desktop/Projects/hq/personal/fact-bank-private.yaml.
 # Edit THIS file, then run `npm run resume && npm run build`. Never edit the generated outputs.
 # Tailoring tools may only select/reorder/rephrase from here, never invent facts.
 #
@@ -35,7 +36,7 @@ identity:
 # planned coursework for an expected degree is standard. Coursework is capped at 5 and
 # limited to courses that name a skill the rest of the resume does not show.
 education:
-  - school: "University of Pennsylvania, School of Engineering and Applied Science"
+  - school: "University of Pennsylvania"
     degree: "M.S.E. in Data Science"
     graduation: "Expected December 2026"
     gpa: "3.62/4.0"
@@ -43,7 +44,7 @@ education:
       - "Theory of Machine Learning"
       - "Emerging Theory of Large Language Models"
       - "Advanced Operating Systems"
-  - school: "Lehigh University, P.C. Rossin College of Engineering and Applied Science"
+  - school: "Lehigh University"
     degree: "B.S. in Computer Science and Engineering"
     graduation: "May 2025"
     gpa: "3.65/4.0 (major 3.75)"
@@ -57,19 +58,21 @@ skills:
     [
       PyTorch,
       "LoRA fine-tuning",
-      "contrastive learning",
+      "distillation",
+      "retrieval",
       "reinforcement learning",
-      MERT,
     ]
   Systems:
     [
       WebAssembly,
-      "AWS CDK",
+      Wasmtime,
+      "AWS (CDK, Lambda, Bedrock, S3)",
       "Spring Boot",
       FastAPI,
       MCP,
-      "AWS (Bedrock, S3, Lambda)",
+      SQLite,
       "Kubernetes (K3s)",
+      "ESP32 and Raspberry Pi",
     ]
 
 # Experience bullet bank. The resume picks from it via `resume.sections` below; the
@@ -104,16 +107,18 @@ experience:
       # 0 FI Factory. Source: product-platform-main/cdk/factory/README.md (2026-08-07, by John);
       #   the "ten hand edits, 3 of 3 banks" context is product-platform-main/DECISIONS.md
       #   2026-06-10 (NA-1147). The catalog of what each bank's slice contains is still open.
-      - "Built a generator that turns one YAML file per bank into that bank's AWS stacks. Onboarding had meant about ten hand edits per bank, and all three production banks had shipped with a routing defect."
+      #   2026-09-12 rewrite: plain glosses taken from the deck's OUTLINE.md ("a bank is pointed at
+      #   the wrong place" for the tenant-routing defect).
+      - "Built a generator that sets up a new bank's AWS infrastructure from one short YAML file, replacing about ten hand edits per bank. Those hand edits had misrouted traffic for all three banks in production."
       # 1 Living documentation (Paul Short's project; John built the pipelines and the site).
       #   Source: documentation-automation/LOG.md (Phase 1 code-complete, 0% deployed 2026-08-11)
       #   and documentation-automation/system-scan/README.md (the daily scan, built not deployed).
-      - "Built the pipelines behind self-updating documentation: a weekly Lambda that reads the AWS accounts and rewrites the docs with Bedrock, and a scanner that drafts updates when code changes. Tested but not yet deployed."
-      # 2 Studio. Source: studio-mcp-ts/README.md.
-      - "Built Studio, a gateway that lets an AI agent call any internal app through one MCP endpoint, with one set of rules for who may do what. Rewrote it after security review found two ways a caller could act as someone else."
+      - "Built pipelines that have Bedrock rewrite the docs weekly from the live AWS accounts (tested, not deployed)."
+      # 2 Studio. Source: studio-mcp-ts/README.md; the two auth bypasses and the TS rewrite are the deck's slide 8.
+      - "Built Studio, an MCP gateway that gives AI tools one way into the company's internal apps under one set of access rules. Rewrote it in TypeScript after security review found two ways to pose as another user."
       # 3 Production portal. Source: the deck (eleven changes) and Flight-Deck git log
       #   (NA-964 S3 browser, NA-971, NA-1065 white-label, NA-1207, NA-1731 timeline).
-      - "Shipped eleven changes to the Spring Boot portal that banks log into: an activity timeline with channels and search, a browser for the files banks keep in S3, and documentation white-labeled per bank."
+      - "Shipped eleven changes to the Spring Boot portal banks log into, including an activity timeline and an S3 file browser."
       # ---- bank only from here ----
       # 4 The Phase 2 daily scan (system-scan/README.md): a SAM package, built but not deployed.
       - "Built a daily scan of the Compass AWS account that diffs the account against yesterday in code and has Bedrock rank and narrate the changes into a plain-language report."
@@ -140,8 +145,8 @@ experience:
     kind: work
     tags: [llm, fastapi, backend, multi-agent, healthcare, full-stack, shipping]
     bullets:
-      - "Built a production therapy chatbot on LLaMA and FastAPI. Clinical rules control the flow of each conversation and the model writes the replies, so one system covers several conditions."
-      - "Wrote the backend APIs and the conversation state handling behind the chat, so prompts could be changed and tested quickly."
+      - "Built a therapy chatbot used in production on LLaMA and FastAPI: clinical rules steer each conversation, and the model writes the replies."
+      - "Wrote the backend APIs and conversation-state handling, so prompts could be changed and tested quickly."
       - "Co-authored a study of outcomes for 236 spinal-fusion patients as a research associate there in 2023."
 
   - id: quant-game
@@ -161,6 +166,10 @@ experience:
     kind: work
     tags: [ml, stats, regression, healthcare, data]
     bullets:
+      # 0 Source: public/papers/zimvie-acdf-predictive-modeling.pdf (236 patients, binary logistic
+      #   regression on fair/poor outcomes). Bullets 1 and 2 are John's experimental work that is
+      #   NOT in the paper (confirmed by John 2026-09-12); say so if they are ever used.
+      - "Co-authored a 236-patient study of outcomes after cervical spine fusion surgery, using logistic regression to find which factors predicted a fair or poor outcome."
       - "Modeled post-surgical patient outcomes with logistic regression and support vector machines across a 100-patient ACDF cohort."
       - "Benchmarked missing-data imputation methods (EM algorithm, regression) to improve dataset completeness for downstream modeling."
 
@@ -176,24 +185,28 @@ experience:
 
   # ---------------- research ----------------
   - id: kronos
-    org: "Kronos: WebAssembly Runtime"
-    role: "UPenn (advisor: Prof. Sebastian Angel)"
+    org: "Kronos: a Type II exovisor"
+    role: "kronoslabs.dev"
     dates: "Oct 2024 – Present"
     kind: research
     tags:
       [systems, rust, webassembly, concurrency, security, runtime, performance]
     bullets:
-      # Sources: public/papers/kronos.pdf (0.08 MiB per isolate, roughly 20x denser than Docker,
-      # up to 6.7x on four cores) and memory note project_kronos_plan (kronoslabs.dev).
-      - "Built a WebAssembly runtime in Rust that runs many tenants in one process. Each tenant costs about 0.08 MiB of memory, about a twentieth of a Docker container, and gets its own CPU and wall-clock budget."
-      - "Wrote a work-stealing thread pool for guest threads. Matrix multiply runs up to 6.7x faster on four cores."
-      - "Co-wrote a nine-page paper on the design with Ajax Li (unpublished)."
-      - "Turned the runtime into kronoslabs.dev, a live site where a plain-language request becomes a sandboxed app."
+      # Rewritten 2026-09-12. The April paper's 6.7x, 0.08 MiB, "20x denser than Docker" and 74
+      # imports did not hold (memory note project_kronos_paper); never reuse them.
+      # 0 Source: Projects/kronos/README.md ("A cloud for small software", deploy -> share -> run,
+      #   Python/JS, public runs need no account, Agent/CLI API keys). Live since July 2026.
+      - "Built Kronos, a cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account."
+      # 1 Source: kronos-rs/crates/runtime (epoch deadline on the run's wall clock; preopen-based
+      #   grants; CapabilityDenied) and the README runtime stack.
+      - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
+      # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
+      - "Co-wrote a technical report with Ajax Li (not yet published) that audits every code path that starts a program and measures about 0.15 MiB of memory per added sandbox."
 
   - id: deployed-learning
-    org: "Learning After Deployment"
+    org: "Reasoning and Memory in Language Models"
     role: "independent research"
-    dates: "Sep 2026 – Present"
+    dates: "Jul 2026 – Present"
     kind: research
     tags:
       [
@@ -207,96 +220,44 @@ experience:
         pytorch,
       ]
     bullets:
-      # Sources: ~/Desktop/deployed-learning/STATUS.md and docs/RESEARCH-STATE.md (ledger C3 to C10,
-      # 2026-09-04 to 09-09). "A third as much" is the C5 matched-recall ratio on Pythia-410M; at
-      # 1B the ratio is 4 to 5x (C6). Near-zero forgetting is C8 (+0.02 nats at 0.97 accuracy on
-      # 410M, +0.006 at 1B). All on a synthetic fact benchmark; nothing posted yet.
+      # Rewritten 2026-09-12 from Projects/deployed-learning/docs/RESEARCH-STATE.md. The old
+      # "forgets a third as much" bullets (C4 to C8) are caveated by C12: the ordering reverses on
+      # question-shaped text, so they are kept below as bank only and must not go back on the page.
+      # 0 Scope: Pythia-410M and 1B; synthetic facts plus CounterFact P17 real facts (C13).
+      - "Now studying when a deployed language model should learn a new fact in its weights and when it should just look the fact up. Experiments on Pythia-410M and 1B with synthetic and real facts; not published."
+      # 1 C14 (retrieval matches or beats weights on recall) + C17 (break-even Q* about 2,400
+      #   queries per fact at 410M by FLOPs, 1,300 at 1B).
+      - "Found that looking facts up was as accurate as weight updates or better on every test, then priced the tradeoff: on Pythia-410M, learning a fact only saves compute once it has been asked about roughly 2,400 times."
+      # 2 C11: lexical gate, recall 1.000, false fires 0.000, off-format drift zero by construction.
+      - "Built a gate that turns the update on only when a prompt names a learned entity, leaving all other text as it was."
+      # 3 C19: one rank-4 adapter per entity, 40 facts over 8 rounds at 1.00/1.00 with no rehearsal;
+      #   62.9M params for 40 facts = 20x the shared r=8 LoRA; one seed, synthetic bench.
+      - "Gave each entity its own small adapter, so 40 facts added over 8 rounds all stayed correct with no replay of old data, at 20 times the parameters of one shared adapter (one seed)."
+      # ---- bank only from here (C4 to C8 caveated by C12) ----
       - "Studying how a deployed language model should learn new facts without forgetting what it already knows. The method: train the model to reproduce what it would have said with the fact in its prompt."
       - "Found on Pythia-410M that this stores the fact itself rather than the sentence it came from, and forgets about a third as much as ordinary fine-tuning at the same recall. The result holds at 1B."
       - "Added a penalty for drift on unrelated text, which brought forgetting to near zero while the model still answered 97% of questions about the new facts. Synthetic facts only so far; unpublished."
       # bank: averaging the teacher over question wordings (C5)
       - "Averaging the teacher over eight phrasings of each question raised held-out recall of the new facts from about 0.6 to between 0.82 and 0.91."
-
-  - id: jspace-hrm
-    org: "Recurrent Reasoning Grafts in Frozen Language Models"
-    role: "independent research"
-    dates: "Jul 2026 – Sep 2026"
-    kind: research
-    tags:
-      [
-        research,
-        llm,
-        hrm,
-        trm,
-        recursion,
-        lora,
-        pytorch,
-        negative-result,
-        gpu-infra,
-      ]
-    bullets:
-      # Sources: memory note project_jspace_hrm (C43/C44 LoRA wins; C49 from-scratch control) and
-      # ~/workspace/jspace-hrm/docs/paper-negative-result.md (draft, unposted).
-      - "Tested whether adding a small recurrent reasoning module inside a frozen language model beats plain LoRA fine-tuning on multi-hop questions. It does not: LoRA won every test by 0.4 to 0.85 in accuracy across three seeds."
-      - "Ran the control that could have rescued the idea: trained from scratch, the same blocks score higher when run once than when run in a loop. Wrote it up as a draft paper, unpublished."
-      # bank
-      - "Kept a ledger of 49 claims for the write-up, each tied to the experiment that settled it."
-
-  - id: neurovariety
-    org: "neurovariety (open source)"
-    role: "Author"
-    dates: "Apr 2026 – Jun 2026"
-    kind: research
-    tags:
-      [
-        research,
-        machine-learning,
-        rust,
-        python,
-        algebraic-geometry,
-        oss,
-        theory,
-      ]
-    bullets:
-      - "Authored an open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias."
+      # 8, 9: the J-space graft (jspace-hrm ledger, docs/RESEARCH-STATE.md). About 5% trainable
+      #   params. C1: Pythia-1B 8-hop 54%, unseen entities 61%, frozen base about 0 (2 reruns).
+      #   C20: Coder-7B 8-hop 0.961 on the same entity task.
+      - "Grafted a small recurrent reasoning module with learned halting (TRM-style) into the internal band a frozen language model uses for multi-step reasoning, training only about 5% of the parameters."
+      - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and to 61% on entities never seen in training; on Qwen2.5-Coder-7B the graft reached 96% on eight-hop questions."
 
   # ---------------- projects ----------------
-  - id: dj-copilot
-    org: "DJ Copilot"
-    role: "independent audio-ML project"
-    dates: "Jul 2026 – Present"
-    kind: project
-    tags:
-      [
-        ml,
-        audio,
-        transformers,
-        contrastive,
-        data,
-        pipeline,
-        python,
-        music,
-        mert,
-      ]
-    bullets:
-      # Sources: memory note project_dj_copilot (Phase 3: honest model level ~4.55% vs the 6.937%
-      # counting bar) and ~/Desktop/dj_copilot/STATUS.md headline table (base 9.78 / cold 3.14;
-      # month feature 13.45 / 7.77; month-shuffle control 9.76 / 3.28; 283 months of plays).
-      - "Embedded 42,397 tracks with a music transformer (MERT) and trained a model to predict the next track in a DJ set from 1.07M examples. It lost to a simple count of what usually follows each track (4.6% vs 6.9% recall@10)."
-      - "Added features for what the DJ community was playing each month, which more than doubled recall@10 for tracks with no play history, from 3.1% to 7.8%. Shuffling the months erased the gain, so the effect is timing, not fame."
-      # bank: the same month features lifted overall validation recall@10 from 9.8% to 13.5%;
-      # a v1.5 feature set plus a DJ-by-artist affinity feature reached 14.1% overall and 8.7% cold.
-      - "The month features, built from 283 months of plays, lifted overall validation recall@10 from 9.8% to 13.5%; adding a feature for how much each DJ had played the artist before reached 14.1% overall and 8.7% for tracks with no play history."
-
-  - id: dj-rl
-    org: "DJ Reinforcement Learning System"
-    role: "UPenn ESE 519, with Chris Spletzer"
+  - id: crowd-music
+    org: "Crowd-Aware Music Recommender"
+    role: "UPenn ESE 5190, with Chris Spletzer"
     dates: "Aug 2025 – Dec 2025"
     kind: project
     tags: [rl, embedded, ml, sequence, full-stack, sensors, 0-to-1]
     bullets:
-      - "Built a WiFi mesh of ESP32 sensor nodes measuring sound, heat, and air in a room, streaming to a Raspberry Pi."
-      - "Trained a 2M-parameter GRU on 2,000+ scraped DJ sets to predict the next track, plus a reinforcement-learning head that adjusts to the live sensor readings."
+      # Sources: Archive/stale/ada_iteration_one/final-project-f25-underdogs/README.md and
+      #   RTRLOS/README.md ("approximately 3,000" scraped sets, 1,799,552 parameters). No measured
+      #   result exists for the RL head, so describe it, do not claim it worked on a crowd.
+      - "Wired ESP32 sensor boards and a thermal camera to a Raspberry Pi to track crowd movement and sound in a room."
+      - "Trained a 1.8M-parameter GRU on about 3,000 scraped tracklists to predict the next song, plus a reinforcement learning head that adjusts each pick to how the crowd moves."
 
   - id: compute-cluster
     org: "Home Compute Cluster"
@@ -315,17 +276,7 @@ experience:
         tailscale,
       ]
     bullets:
-      - "Built a mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook as the amd64 node) with SOPS-encrypted secrets, scheduled datastore snapshots with a verified restore, and Grafana, Loki, and Alloy over Tailscale; it runs the unattended crawl and embedding jobs above."
-
-  - id: tracklist
-    org: "Tracklist Engine"
-    role: "Independent"
-    dates: "Jan 2026 – Aug 2026"
-    kind: project
-    tags: [ml, audio, data, pipeline, python, rust, sqlite, music, provenance]
-    bullets:
-      - "Built a provenance-first DJ-set alignment engine (Rust kernel, Python sensors, content-addressed artifacts, SQLite provenance) over a 41,492-set, 1.24M-slot corpus; an integrity re-parse of all cached pages ran with zero failures and 99.969% key agreement."
-      - "Integrated DETR-based cue-point detection, Demucs source separation, and MERT embeddings for measure-level audio analysis across sets and tracks."
+      - "Built a mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook as the amd64 node) with SOPS-encrypted secrets, scheduled datastore snapshots with a verified restore, and Grafana, Loki, and Alloy over Tailscale; it runs long unattended jobs."
 
   # trading-bot is deliberately NOT here. It never ran (no service, no EC2, see memory
   # project-tradingbot); the old "automated live paper trading on EC2" bullet was untrue.
@@ -334,69 +285,48 @@ experience:
 # here appear on the site; `page` links to a case-study page, `featured` puts
 # it in the Featured section. `tags` is the short muted line under the title.
 site:
-  headline: "MS in Data Science, University of Pennsylvania, 2026. BS in Computer Science & Engineering, Lehigh University, 2025."
+  # Homepage paragraph (PG-shaped homepage, 2026-09-12).
   bio: >-
-    Master's student in Data Science at Penn (graduating December 2026). Co-author of Kronos,
-    a multi-tenant WebAssembly runtime, now live at kronoslabs.dev. Summer 2026 software
-    engineer intern at Ninth Wave (open-finance fintech), where I built the generator that
-    onboards a bank from one YAML file, the pipelines behind self-updating documentation, and
-    an OpenAPI-to-MCP gateway. Current research: a principled weight-update rule for deployed
-    language models.
-    Before Penn: a clinical therapy chatbot at New York Brain & Spine Surgery and a fintech
-    sim with 61M data points.
-  now:
-    - "Penn MS Data Science (GPA 3.62), graduating Dec 2026"
-    - "Learning-after-deployment research (context distillation)"
-    - "Kronos at kronoslabs.dev"
-  prev:
-    - "SWE intern at Ninth Wave (summer 2026)"
-    - "Recurrent reasoning grafts: a negative result (2026)"
-    - "Kronos paper (2025)"
-    - "NYBSS therapy chatbot (2025-2026)"
-    - "BSCS Lehigh 2025 (GPA 3.65, major 3.75), Dean's list"
+    I'm a master's student in Data Science at Penn, graduating in December 2026. I build Kronos,
+    a cloud for small software, live at kronoslabs.dev. This summer I was a software engineer
+    intern at Ninth Wave, an open-finance fintech. I'm currently researching language models and
+    world models.
+  # `featured` items appear under Selected work on the homepage with their `summary`; every item
+  # appears on /projects with `tags` and `blurb`.
   projects:
     - id: kronos
       featured: true
       page: /projects/kronos
-      title: "Kronos: A Type II Exovisor with WebAssembly"
-      tags: "2025 to present. Rust. Co-authored paper. Live at kronoslabs.dev."
-      blurb: "A multi-tenant runtime that combines WebAssembly's sandbox with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime); up to 6.7x speedup on dense matmul while preserving per-tenant trap containment. Since July 2026 it also backs kronoslabs.dev, a service where a build turn yields a capability-gated app shareable by link."
-    - id: deployed-learning
+      title: "Kronos: a Type II Exovisor"
+      summary: "A cloud for small software: deploy a Python or JavaScript program and share a link anyone can run. Live at kronoslabs.dev."
+      tags: "2024 to present. Rust, WebAssembly. Technical report with Ajax Li."
+      blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a technical report with Ajax Li, which audits every code path that starts a module and measures about 0.15 MiB of memory per added isolate. Live at kronoslabs.dev."
+    - id: research
       featured: true
-      title: "Learning After Deployment"
-      tags: "Sep 2026 to present. LLMs. Context distillation, LoRA, Pythia."
-      blurb: "What objective should update a deployed language model's weights from new experience? The bet is context distillation under a KL forgetting constraint. On Pythia-410M and 1B: distillation stores facts rather than strings and forgets about a third as much as raw-text fine-tuning at matched recall; adding the replay term brings forgetting to near zero at 0.97 fact accuracy. Synthetic facts so far."
-    - id: jspace-hrm
-      title: "Recurrent Reasoning Grafts: A Negative Result"
-      tags: "Jul to Sep 2026. LLMs. TRM/HRM, LoRA, Vast.ai."
-      blurb: "Does a TRM-style recurrent module grafted into a frozen LM beat parameter-matched LoRA on multi-hop composition? No: LoRA won every held-out probe by 0.4 to 0.85 absolute accuracy across three seeds. Written up with a 49-claim evidence ledger and from-scratch controls."
-    - id: dj-copilot
-      title: "DJ Copilot"
-      tags: "2026. Audio ML. MERT, contrastive next-track model."
-      blurb: "42,397 tracks embedded with MERT-v1-330M over a 1.07M-event corpus of DJ sets. Track-level modeling lost to an adjacency-count baseline (4.6% vs 6.9% recall@10). Time-indexed features for what the DJ community was playing each month then lifted validation recall@10 from 9.8% to 13.5%, and cold-track recall from 3.1% to 7.8%; a month-shuffle control returns the base, so the effect is timing, not fame."
-    - id: dj-rl
+      title: "Reasoning and Memory in Language Models"
+      summary: "Grafting a recurrent reasoning module into frozen language models, and working out when a deployed model should learn a fact in its weights or just look it up."
+      tags: "Jul 2026 to present. Independent research. Pythia, Qwen2.5-Coder, PyTorch."
+      blurb: "Grafted a small recurrent reasoning module with learned halting (TRM-style) into the internal band a frozen language model uses for multi-step reasoning, training about 5% of the parameters. It took frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions and to 61% on entities never seen in training, and reached 96% on eight-hop questions on Qwen2.5-Coder-7B. Now studying when a deployed model should learn a new fact in its weights and when it should look the fact up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
+    - id: crowd-music
       featured: true
-      page: /projects/dj-rl-system
-      title: "DJ Reinforcement Learning System"
-      tags: "Dec 2025. Embedded. GRU + RL."
-      blurb: "A wireless ESP32-S2 sensor mesh (environmental, audio, thermal) that streams crowd-engagement metrics to a Raspberry Pi controller. A 2M-parameter GRU pretrained on ~3,000 DJ sets predicts the next song; an RL head adapts to live sensor feedback. Built with Chris Spletzer for UPenn ESE 519."
+      page: /projects/crowd-aware-music
+      title: "Crowd-Aware Music Recommender"
+      summary: "Sensors track how a room's crowd moves; a GRU picks the next song and a reinforcement learning head adjusts to the crowd. With Chris Spletzer."
+      tags: "Fall 2025. UPenn ESE 5190. Embedded + ML."
+      blurb: "ESP32 sensor packs and a thermal camera measure sound, room conditions, and crowd movement and feed a Raspberry Pi. A 1.8M-parameter GRU trained on about 3,000 scraped tracklists predicts the next song, and a small reinforcement learning head adjusts each pick to how the crowd moves. Built with Chris Spletzer."
     - id: ninth-wave
       title: "Ninth Wave: Software Engineer Intern"
-      tags: "Summer 2026. Fintech. AWS CDK, living documentation, MCP gateway, Spring Boot."
-      blurb: "Automated bank onboarding onto Compass's AWS platform with a CDK generator (one YAML file per bank), built the pipelines behind Ninth Wave's self-updating documentation, built Studio (an OpenAPI-to-MCP gateway for internal apps), and shipped eleven changes to the Spring Boot portal banks log into."
-    - id: compute-cluster
-      title: "Home Compute Cluster"
-      tags: "Aug 2026. K3s, Raspberry Pi, SOPS, Grafana."
-      blurb: "A mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook) with encrypted secrets, verified snapshot restores, and monitoring over Tailscale. Runs the unattended crawl and embedding jobs for the music projects."
-    - id: tracklist
-      title: "Tracklist Engine"
-      tags: "2026. Audio ML. Rust + Python, DETR, Demucs, MERT."
-      blurb: "A provenance-first DJ-set alignment engine over a 41,492-set corpus. Combines DETR cue-point detection, Demucs source separation, and MERT music-transformer embeddings over a normalized SQLite schema."
+      tags: "Summer 2026. Open-finance fintech. AWS CDK, MCP, Spring Boot."
+      blurb: "Built a generator that sets up a new bank's AWS infrastructure from one short YAML file, replacing about ten hand edits per bank. Built Studio, an MCP gateway that gives AI tools one way into the company's internal apps under one set of access rules, and rewrote it in TypeScript after security review. Shipped eleven changes to the Spring Boot portal banks log into, and built the pipelines behind self-updating documentation."
     - id: nybss-swe
       page: /projects/therapy-chatbot
       title: "Clinical Therapy Chatbot"
       tags: "May 2025 to Mar 2026. LLaMA, FastAPI."
-      blurb: "A production therapy chatbot for New York Brain & Spine Surgery, blending rule-based clinical workflows with LLM-generated responses. Configurable multi-agent system spanning multiple mental-health conditions."
+      blurb: "A therapy chatbot used in production at New York Brain & Spine Surgery: clinical rules steer each conversation, and the model writes the replies. One system covers several conditions."
+    - id: compute-cluster
+      title: "Home Compute Cluster"
+      tags: "Aug 2026. K3s, Raspberry Pi, SOPS, Grafana."
+      blurb: "A mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook) with encrypted secrets, tested snapshot restores, and monitoring over Tailscale. It runs long unattended jobs so the laptop does not have to."
     - id: quant-game
       page: /projects/quant-game
       title: "The Quant Game"
@@ -407,10 +337,6 @@ site:
       title: "Dropbox Document Search Engine"
       tags: "2024. Capstone. NLP + AWS."
       blurb: "A search engine for ~23,000 Dropbox documents, with sentence-level highlight extraction. Partitioned indexing + Dropbox API integration for real-time access. Lehigh capstone for an early-stage startup."
-    - id: neurovariety
-      title: "neurovariety: Open-Source ML Library"
-      tags: "2026. Rust + Python. Algebraic geometry. MIT license."
-      blurb: "An open-source Python/Rust library that models neural-network function spaces as algebraic varieties, computing dimension, degree, and singular loci to quantify expressivity and implicit bias."
     - id: hangover
       page: /hangover
       title: "Hangover Simulator"
@@ -419,23 +345,16 @@ site:
 
 publications:
   - id: kronos-paper
-    title: "Kronos: A Type II Exovisor Architecture with WebAssembly"
-    year: 2025
+    title: "Kronos: Instantiation-Time Capability Gating for Multi-Tenant WebAssembly"
+    year: 2026
     with: "with Ajax Li"
-    meta: "2025. With Ajax Li. IEEE format, 9 pp. Unpublished manuscript."
+    meta: "2026. With Ajax Li. Technical report, 6 pp. Unpublished."
     pdf: /papers/kronos.pdf
     page: /projects/kronos
     github: https://github.com/jca225/webAssembly_Interpreter
-    abstract: "A multi-tenant WebAssembly runtime that combines language-level sandboxing with exokernel-style capability gating and a custom wasi:thread-spawn dispatcher. ~5,000 lines of Rust; ~0.08 MiB per isolate (3x denser than Wasmtime, 18x denser than Docker); up to 6.7x speedup on dense matrix multiply while preserving per-tenant trap containment."
+    abstract: "A multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation, with fuel and wall-clock budgets on every call. The report audits every instantiation path, finding the check enforced on the server path and skipped or weakened on two library paths, and measures about 0.15 MiB of memory per added isolate. It supersedes an April 2026 draft."
     on_resume: true
-  - id: jspace-paper
-    title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace Is Dominated by LoRA: A Negative Result"
-    short_title: "Recurrent Reasoning Grafts Are Dominated by LoRA: A Negative Result"
-    year: 2026
-    with: "sole author, draft"
-    meta: "2026. Sole author. Draft, not yet posted."
-    abstract: "A TRM-style recurrent module grafted into a frozen language model's middle layers, trained on multi-hop entity composition, is beaten by a parameter-matched LoRA on every held-out probe by 0.4 to 0.85 absolute accuracy across three seeds. Neither method extrapolates past trained depth. Includes a 49-claim evidence ledger and four reusable measurement findings."
-    on_resume: false
+    home: true
   - id: acdf
     title: "A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling"
     short_title: "Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)"
@@ -443,8 +362,9 @@ publications:
     with: "co-author, 236-patient cohort study"
     meta: "2024. Co-author. 236-patient cohort."
     pdf: /papers/zimvie-acdf-predictive-modeling.pdf
-    abstract: "Predictive outcome modeling after Anterior Cervical Diskectomy & Fusion. Evaluated EM-algorithm and regression-based imputation for missing covariates, then fit logistic regression and SVMs to predict patient outcomes from preoperative features. Co-authored while a research associate at New York Brain & Spine Surgery."
+    abstract: "Outcomes for 236 consecutive patients after anterior cervical discectomy and fusion with one implant, with binary logistic regression to identify which factors predicted a fair or poor result. Co-authored while a research associate at New York Brain & Spine Surgery."
     on_resume: true
+    home: true
   - id: gd
     title: "Gradient Descent Analysis"
     year: 2023
@@ -469,17 +389,20 @@ publications:
 resume:
   include_publications: false
   sections:
+    # Kronos sits in Projects now that it is a live product with a technical report. quant-game
+    # swaps in for quant postings, compute-cluster for infrastructure postings.
     - title: Experience
-      ids: [ninth-wave, nybss-swe]
+      ids: [ninth-wave, nybss-swe, nybss-research]
     - title: Research
-      ids: [kronos, deployed-learning, jspace-hrm]
+      ids: [deployed-learning]
     - title: Projects
-      ids: [dj-copilot] # dj-rl, compute-cluster, tracklist stay in the bank; swap in for embedded, infra, or audio postings
+      ids: [kronos, crowd-music]
   # per-id bullet selection for the one-page resume: an int = first N bullets,
   # a list = those 0-based indices, omitted = all bullets.
   bullet_limit:
-    ninth-wave: [0, 1, 2, 3] # bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
-    nybss-swe: [0, 2] # bullet 1 (backend APIs) stays in the bank
-    deployed-learning: [0, 1, 2] # bullet 3 (teacher averaging) stays in the bank
-    jspace-hrm: [0, 1] # bullet 2 (49-claim ledger) stays in the bank
-    dj-copilot: [0, 1] # bullet 2 (overall recall and the DJ-affinity feature) stays in the bank
+    ninth-wave: [0, 2, 3, 1] # generator, Studio, portal, docs; bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
+    nybss-swe: [0, 1] # bullet 2 (the 2023 study) now lives in the nybss-research entry
+    nybss-research: [0] # bullets 1-2 are experimental work not in the paper
+    kronos: [0, 1, 2]
+    deployed-learning: [8, 9, 0, 1, 2] # graft bullets first (8, 9), then continual learning; bullet 3 (one seed) and bullets 4-7 (caveated by C12) stay in the bank
+    crowd-music: [0, 1]

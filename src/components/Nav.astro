@@ -1,8 +1,16 @@
-<hr />
-<p>
-  <a href="/">Home</a> |
-  <a href="/#projects">Projects</a> |
-  <a href="/writing">Writing</a> |
-  <a href="/resume.pdf" target="_blank" rel="noopener">Resume (PDF)</a>
-</p>
-<hr />
+---
+interface Props {
+  current?: 'home' | 'projects' | 'writing';
+}
+const { current } = Astro.props;
+---
+
+<nav class="top">
+  {current !== 'home' && <><a href="/">Home</a> · </>}
+  <a href="/projects">All projects</a> ·
+  <a href="/resume.pdf">Resume</a> ·
+  <a href="/writing">Writing</a> ·
+  <a href="https://github.com/jca225">GitHub</a> ·
+  <a href="https://www.linkedin.com/in/john-abrahams-94a04924a">LinkedIn</a> ·
+  <a href="mailto:johnnycabrahams@gmail.com">Email</a>
+</nav>

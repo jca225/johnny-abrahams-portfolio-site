@@ -1,67 +1,34 @@
 ---
 // Generated from profile/profile.yaml. Edit the YAML, not this file's content.
 import Base from '../layouts/Base.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import { profile, resumeSections } from '../lib/profile';
+import { profile } from '../lib/profile';
 
-const { identity, education, skills, site, publications } = profile;
-const sections = resumeSections();
-const featured = site.projects.filter((p: any) => p.featured);
-const rest = site.projects.filter((p: any) => !p.featured);
+const { identity, site, publications } = profile;
+const selected = site.projects.filter((p: any) => p.featured);
+const papers = publications.filter((p: any) => p.home);
 ---
 
 <Base title={identity.full_name} current="home">
   <h1>{identity.full_name}</h1>
-  <p>
-    <a href={`mailto:${identity.email}`}>{identity.email}</a> |
-    <a href={identity.github_url}>github</a> |
-    <a href={identity.linkedin_url}>linkedin</a> |
-    <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
-  </p>
-  <table class="facts">
-    <tr><th>Now</th><td>{site.now.map((x: string) => <>{x}<br /></>)}</td></tr>
-    <tr><th>Prev</th><td>{site.prev.map((x: string) => <>{x}<br /></>)}</td></tr>
-    {Object.entries(skills).map(([k, v]: [string, any]) => <tr><th>{k}</th><td>{v.join(', ')}</td></tr>)}
-  </table>
+  <p>{site.bio}</p>
 
-  <hr />
-
-  <h2 id="projects">Featured projects</h2>
-  {featured.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
-
-  <h2>Other projects</h2>
-  {rest.map((p: any) => <ProjectCard href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />)}
-
-  <hr />
-
-  <h2>Education</h2>
-  {education.map((e: any) => (
-    <p>
-      <b>{e.school}</b>, {e.graduation}<br />
-      {e.degree}. GPA {e.gpa}.{e.minor && ` Minor: ${e.minor}.`}{e.honors && ` ${e.honors}.`}<br />
-      {e.coursework?.length > 0 && <span class="muted">Coursework: {e.coursework.join(', ')}</span>}
-    </p>
-  ))}
-
-  {sections.map((s) => (
-    <>
-      <h2>{s.title}</h2>
-      {s.items.map((x: any) => (
-        <p>
-          <b>{x.org}</b>, {x.role}. <span class="muted">{x.dates}</span>
-          <ul>{x.bullets.map((b: string) => <li>{b}</li>)}</ul>
-        </p>
-      ))}
-    </>
-  ))}
-
-  <hr />
-
-  <h2>Writing</h2>
-  <p>
-    {publications.map((w: any) => (
-      <><a href={w.pdf} target="_blank" rel="noopener">{w.short_title ?? w.title}</a> ({w.year}, {w.with})<br /></>
+  <h2>Selected work</h2>
+  <ul class="list">
+    {selected.map((p: any) => (
+      <li>
+        <a href={p.page ?? `/projects#${p.id}`}>{p.title}</a><br />
+        <span class="muted">{p.summary}</span>
+      </li>
     ))}
-  </p>
-  <p>More on the <a href="/writing">writing page</a>.</p>
+  </ul>
+
+  <h2>Papers</h2>
+  <ul class="list">
+    {papers.map((w: any) => (
+      <li>
+        {w.pdf ? <a href={w.pdf}>{w.short_title ?? w.title}</a> : (w.short_title ?? w.title)}
+        {' '}<span class="muted">({w.year}, {w.with})</span>
+      </li>
+    ))}
+  </ul>
 </Base>

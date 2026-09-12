@@ -1,0 +1,15 @@
+---
+// Generated from profile/profile.yaml (site.projects). Edit the YAML.
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { profile } from '../lib/profile';
+
+const { site } = profile;
+---
+
+<Base title="Projects" description="Projects and research by John Abrahams." current="projects">
+  <h1>Projects</h1>
+  {site.projects.map((p: any) => (
+    <ProjectCard id={p.id} href={p.page} title={p.title} tags={p.tags} blurb={p.blurb} />
+  ))}
+</Base>

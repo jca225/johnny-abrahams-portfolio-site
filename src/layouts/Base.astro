@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
-import Footer from '../components/Footer.astro';
 
 interface Props {
   title?: string;
@@ -11,7 +10,8 @@ interface Props {
 
 const {
   title = 'John Abrahams',
-  description = 'John Abrahams. MS Data Science at Penn. Systems, ML, and the occasional paper.',
+  description = 'John Abrahams. Master\'s student in Data Science at Penn. Systems and machine learning.',
+  current,
 } = Astro.props;
 
 const fullTitle = title === 'John Abrahams' ? title : `${title} - John Abrahams`;
@@ -35,10 +35,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta property="og:image" content={new URL('/images/og.png', Astro.site).toString()} />
   </head>
   <body>
-    <Nav />
-    <main>
-      <slot />
-    </main>
-    <Footer />
+    <div class="page">
+      <Nav current={current} />
+      <main>
+        <slot />
+      </main>
+    </div>
   </body>
 </html>

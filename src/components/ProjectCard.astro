@@ -1,21 +1,16 @@
 ---
 interface Props {
+  id?: string;
   href?: string;
   title: string;
   tags: string;
   blurb: string;
-  featured?: boolean;
-  external?: boolean;
 }
-const { href, title, tags, blurb, external = false } = Astro.props;
+const { id, href, title, tags, blurb } = Astro.props;
 ---
 
-<p>
-  {href
-    ? <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener' : undefined}><b>{title}</b></a>
-    : <b>{title}</b>}
-  <br />
-  <span class="muted">{tags}</span>
-  <br />
-  {blurb}
-</p>
+<div class="card" id={id}>
+  <div class="card-title">{href ? <a href={href}>{title}</a> : title}</div>
+  <div class="muted">{tags}</div>
+  <p>{blurb}</p>
+</div>
