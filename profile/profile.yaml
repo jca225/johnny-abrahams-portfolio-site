@@ -337,11 +337,6 @@ site:
       title: "Dropbox Document Search Engine"
       tags: "2024. Capstone. NLP + AWS."
       blurb: "A search engine for ~23,000 Dropbox documents, with sentence-level highlight extraction. Partitioned indexing + Dropbox API integration for real-time access. Lehigh capstone for an early-stage startup."
-    - id: hangover
-      page: /hangover
-      title: "Hangover Simulator"
-      tags: "Interactive. ODE model."
-      blurb: "BAC kinetics, acetaldehyde clearance, sleep disruption, and an RL discount factor for drunk-you's choices."
 
 publications:
   - id: kronos-paper

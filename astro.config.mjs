@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 
 export default defineConfig({
   site: 'https://johncabrahams.com',
@@ -8,5 +7,4 @@ export default defineConfig({
     format: 'directory',
   },
   redirects: { '/projects/khronos': '/projects/kronos' },
-  integrations: [react()],
 });
