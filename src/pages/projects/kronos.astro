@@ -5,11 +5,11 @@ import Project from '../../layouts/Project.astro';
 <Project
   title="Kronos"
   subtitle="A multi-tenant WebAssembly runtime in Rust that refuses a module before it runs if the module imports file or network access its tenant was not granted."
-  meta="Technical report, 2026 · with Ajax Li · Rust"
+  meta="Paper, 2026 · Rust"
   links={[
-    { label: 'Technical report (PDF)', href: '/papers/kronos.pdf', external: true },
+    { label: 'Paper (PDF)', href: '/papers/kronos.pdf', external: true },
   ]}
-  description="Kronos is a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's capabilities before instantiating it. Technical report by John Abrahams and Ajax Li, University of Pennsylvania."
+  description="Kronos is a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's capabilities before instantiating it. Paper by John Abrahams, University of Pennsylvania."
 >
   <h2>Summary</h2>
   <p>
@@ -22,8 +22,9 @@ import Project from '../../layouts/Project.astro';
     and a wall-clock deadline.
   </p>
   <p>
-    The technical report describes the design, audits every code path that
-    instantiates a module, and reports measurements from two benchmark runs.
+    The paper describes the architecture: the runtime, the capability model,
+    resource control, parallel execution, and the control plane. It also reports
+    measurements and analyzes which properties the code enforced.
   </p>
 
   <h2>Design</h2>
@@ -47,13 +48,13 @@ import Project from '../../layouts/Project.astro';
     </li>
   </ul>
 
-  <h2>What the audit found</h2>
+  <h2>What the analysis found</h2>
   <p>
     The check was enforced on the server's request path. A fast instantiation
     path in the library skipped it, the threaded path granted filesystem access
     unconditionally, and the thread handler stopped workers by advancing an
     epoch counter that every tenant shares, which could expire other tenants'
-    deadlines. The report covers each case and what would fix it.
+    deadlines. The paper covers each case and what would fix it.
   </p>
 
   <h2>Measurements</h2>
@@ -80,12 +81,12 @@ import Project from '../../layouts/Project.astro';
     This runtime is the research ancestor of
     <a href="https://kronoslabs.dev">kronoslabs.dev</a>, which now uses a
     different authority model built on WASI preopened directories. The code is
-    in a private repository and is available on request; the report names the
+    in a private repository and is available on request; the paper names the
     exact commits it describes.
   </p>
 
   <p class="muted">
-    Co-authored with <strong>Ajax Li</strong> (UPenn). Thank you to the
-    architecture group at Penn for early feedback.
+    Thanks to Ajax Li for the benchmark harnesses and evaluation runs, and to
+    the architecture group at Penn for early feedback.
   </p>
 </Project>

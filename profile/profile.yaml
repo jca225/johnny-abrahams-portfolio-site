@@ -201,7 +201,7 @@ experience:
       #   grants; CapabilityDenied) and the README runtime stack.
       - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
       # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
-      - "Co-wrote a technical report with Ajax Li (not yet published) that audits every code path that starts a program and measures about 0.15 MiB of memory per added sandbox."
+      - "Wrote a paper on the research runtime's architecture (not yet published) that measures about 0.15 MiB of memory per added sandbox."
 
   - id: deployed-learning
     org: "Reasoning and Memory in Language Models"
@@ -299,8 +299,8 @@ site:
       page: /projects/kronos
       title: "Kronos: a Type II Exovisor"
       summary: "A cloud for small software: deploy a Python or JavaScript program and share a link anyone can run. Live at kronoslabs.dev."
-      tags: "2024 to present. Rust, WebAssembly. Technical report with Ajax Li."
-      blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a technical report with Ajax Li, which audits every code path that starts a module and measures about 0.15 MiB of memory per added isolate. Live at kronoslabs.dev."
+      tags: "2024 to present. Rust, WebAssembly. Paper on the architecture."
+      blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a paper that covers its architecture, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate. Live at kronoslabs.dev."
     - id: research
       featured: true
       title: "Reasoning and Memory in Language Models"
@@ -340,13 +340,13 @@ site:
 
 publications:
   - id: kronos-paper
-    title: "Kronos: Instantiation-Time Capability Gating for Multi-Tenant WebAssembly"
+    title: "Kronos: The Architecture of a Multi-Tenant WebAssembly Runtime"
     year: 2026
-    with: "with Ajax Li"
-    meta: "2026. With Ajax Li. Technical report, 6 pp. Unpublished."
+    with: "paper"
+    meta: "2026. Paper, 12 pp. Unpublished."
     pdf: /papers/kronos.pdf
     page: /projects/kronos
-    abstract: "A multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation, with fuel and wall-clock budgets on every call. The report audits every instantiation path, finding the check enforced on the server path and skipped or weakened on two library paths, and measures about 0.15 MiB of memory per added isolate. It supersedes an April 2026 draft."
+    abstract: "The architecture of a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation and bounds every call with fuel and a wall-clock deadline. The paper covers the runtime, capability model, resource control, parallel execution, and control plane, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate."
     on_resume: true
     home: true
   - id: acdf
