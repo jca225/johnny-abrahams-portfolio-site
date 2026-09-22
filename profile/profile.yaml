@@ -361,11 +361,6 @@ publications:
     abstract: "The architecture of a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation and bounds every call with fuel and a wall-clock deadline. The paper covers the runtime, capability model, resource control, parallel execution, and control plane, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate."
     on_resume: true
     home: true
-  - id: acdf
-    title: "A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling"
-    short_title: "Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)"
-    year: 2024
-    with: "co-author, 236-patient cohort study"
   # Added 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.{md,pdf} (Sep 2026).
   - id: reasoning-graft
     title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace Is Dominated by LoRA: A Negative Result"
@@ -378,6 +373,11 @@ publications:
     abstract: "Tests whether multi-step reasoning can be installed in a frozen language model by grafting a small recurrent module with learned halting into the band of the residual stream that multi-step reasoning passes through, training only the graft. It cannot: a LoRA adapter with the same number of trainable parameters beats the graft on every held-out test by 0.4 to 0.85 absolute accuracy across three seeds, and neither generalizes past its trained depth. A follow-up explains why: the graft reroutes computation the base already does, its recurrence is inert where it fails, and its halting head cannot see convergence. Also reports four measurement pitfalls for anyone training a module inside a frozen transformer."
     on_resume: true
     home: true
+  - id: acdf
+    title: "A Single-Neurosurgeon Experience with the ZimVie LDR-C ROI Implant: A Study of 236 Patients with Predictive Outcome Modeling"
+    short_title: "Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)"
+    year: 2024
+    with: "co-author, 236-patient cohort study"
     meta: "2024. Co-author. 236-patient cohort."
     pdf: /papers/zimvie-acdf-predictive-modeling.pdf
     abstract: "Outcomes for 236 consecutive patients after anterior cervical discectomy and fusion with one implant, with binary logistic regression to identify which factors predicted a fair or poor result. Co-authored while a research associate at New York Brain & Spine Surgery."
