@@ -2,10 +2,12 @@
 // Generated from profile/profile.yaml. Edit the YAML, not this file's content.
 import Base from '../layouts/Base.astro';
 import { profile } from '../lib/profile';
+import { publishedEssays } from '../lib/essays';
 
 const { identity, site, publications } = profile;
 const selected = site.projects.filter((p: any) => p.featured);
 const papers = publications.filter((p: any) => p.home);
+const essays = (await publishedEssays()).slice(0, 5);
 ---
 
 <Base title={identity.full_name} current="home">
@@ -21,6 +23,17 @@ const papers = publications.filter((p: any) => p.home);
       </li>
     ))}
   </ul>
+
+  {essays.length > 0 && (
+    <>
+      <h2>Essays</h2>
+      <ul class="list">
+        {essays.map((e) => (
+          <li><a href={`/essays/${e.id}`}>{e.data.title}</a></li>
+        ))}
+      </ul>
+    </>
+  )}
 
   <h2>Papers</h2>
   <ul class="list">

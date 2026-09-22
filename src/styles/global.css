@@ -174,3 +174,28 @@ th {
     margin-left: 0;
   }
 }
+
+/* Essays: PG-style bracketed note markers and a plain Notes section. */
+.essay sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+.essay sup a::before {
+  content: "[";
+}
+.essay sup a::after {
+  content: "]";
+}
+.essay sup a {
+  text-decoration: none;
+}
+.essay .footnotes {
+  margin-top: 2.5rem;
+  font-size: 0.93em;
+}
+.essay .footnotes ol {
+  padding-left: 1.6em;
+}
+.essay .footnotes a {
+  overflow-wrap: anywhere;
+}

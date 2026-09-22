@@ -1,12 +1,13 @@
 ---
 interface Props {
-  current?: 'home' | 'projects' | 'writing';
+  current?: 'home' | 'projects' | 'essays' | 'writing';
 }
 const { current } = Astro.props;
 ---
 
 <nav class="top">
   {current !== 'home' && <><a href="/">Home</a> · </>}
+  <a href="/essays">Essays</a> ·
   <a href="/projects">All projects</a> ·
   <a href="/resume.pdf">Resume</a> ·
   <a href="/writing">Writing</a> ·

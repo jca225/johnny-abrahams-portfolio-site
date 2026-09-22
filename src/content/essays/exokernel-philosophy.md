@@ -1,0 +1,45 @@
+---
+title: "The Exokernel Philosophy"
+date: 2026-09-22
+description: "The exokernel let each application bring its own operating system policies and never caught on. Coding agents may bring its philosophy back at a different granularity."
+---
+
+Operating Systems in computers have one fundamental job: to manage the interface between the user and the hardware of the device they are using.[^os] Operating Systems do this with policies, and these policies entail tradeoffs. Reading and writing files from disk are both common activities for a computer, but what if one application, like a streaming service, did a lot of reads and not so many writes? Correspondingly, what if an application, like a digital audio workstation, did a lot of writes and not so many reads? Optimizing reading does so at the expense of writing and vice versa, so Operating Systems try to find the middle ground for the common user.
+
+The problem with this is by creating policies for the average user, suboptimal policies are created for all users and performance degrades. In our previous example, both the streaming service and the digital audio workstation have average performance, but they could get much better performance.
+
+Enter Exokernel.[^paper] The Exokernel allowed application developers to create their own policies optimized for their own application. It could simultaneously use different policies for different applications on the same machine. In this world, both the streaming service and the digital audio workstation could get optimal performance. The problem with the Exokernel is it does not take into account the application developer. These application developers already had enough on their plate, from managing business requirements and stakeholders to coding itself. Not to mention, most of the programming was done in C and C++, with little help from the internet and certainly not AI. To then implement policies for optimizing performance on top of that is not really worth it (unless you are at a quant firm, where they usually just go bare-metal anyways).
+
+So the general idea behind the Exokernel was that a one-size-fits-all approach to Operating System policies was sub-optimal; by allowing applications to bring their own policies they can now push the limits of their apps further. But the incumbent monolithic OSes were too entrenched to replace. The activation energy required for the exokernel to become the canonical design was too high, and switching to this better design was not worth it. So ideas from it were implemented generally in various Operating Systems, most notably in the extended Berkeley Packet Filter (eBPF) design within Linux, but the overarching idea is a relic in Operating System Design history.
+
+Philip Wadler, a British Computer Scientist known for his contributions to type theory, noted in a Strange Loop Conference it takes roughly 20-30 years for a great research idea to become applied. The example he used was Linear Type Theory, which became a hallmark of the Rust programming language, and is part of why it is so powerful. Could something similar happen to the Exokernel? The Exokernel design captures a more abstract idea of tailoring systems to users, able to capture the "subjectivity" of the application itself, and this may be coming back in style in a different way. To understand this, we need to take a detour onto the subject of AI in software.
+
+There are 2 main use-cases of AI in software right now: (1) to produce code and (2) to add a layer of abstraction onto a user's workflows.[^ai] The latter usually describes companies building "AI-native workflows," work that is now being done by AI instead of humans. This is part of a long history of adding layers of abstractions onto technology, and this layer in particular is becoming tailored for specific people and groups.[^romanticism] For example, I was talking to a tech investor at Wharton recently who has some experience in these companies. He described a company creating a personal notepad for bankers that had a one billion dollar valuation.[^granola] Now, obviously there exist some really cool note applications already out there, from Obsidian to Notion and even Apple Notes (I went from Notion to Apple Notes), but coding agents have allowed companies to create their own applications tailored for their own specific use cases.
+
+The Exokernel, despite its promising design, will likely never make a resurgence against the incumbent monoliths… But an Exokernel Philosophy empowered by agents may begin to take shape. Rather than tinkering with policies, users can tinker with the design space of applications with respect to their use-cases. They can engineer their own new features tailored for their specific use case, thus utilizing the Exokernel Design at a different granularity. So many people, technical and non-technical, are now empowered to build applications.
+
+Thus applications are generally moving in this direction of tinkering, and it is illuminating to analyze a previous time in history when this happened: The 1950-1970s. During this time, hardware was in the middle of a large transition phase. They had moved from large clunky components like vacuum tubes to elegant transistors, and hardware was in a unique spot where it was complex enough to be exciting, but simple enough to understand. Building and hacking flourished; Hobbyists reigned supreme; audio gear, radio equipment, TVs, clocks, alarms, and more were the staples built by them.
+
+This is very similar to the current state of things with respect to building software, and the utility of coding agents. Coding has converged toward simpler and more abstracted programming tools such that it is easy for coding agents to work in these environments.[^esp] Hobbyists are able to create more and more, and are no longer limited by the bottleneck of producing code itself. This may be well characterized as the age of hobbyists, where people will now be able to create anything because they can iterate so quickly.[^cluster] And moreover, this will become personalized to the user.
+
+So the hobbyist age finished when hobbyists began building the ultimate hobby machine, the Personal Computer. If one looks abstractly enough, can they notice a certain pattern emerging, spelling out the next personal computer? Elon Musk believes it is an "edge node" (i.e., your phone) that knows what you want and when you want it, at all times, and displays it. Maybe a sort of personal assistant for you that abstracts the coding entirely, and simply carries out the action with code implied.
+
+The Exokernel design captured a deeper philosophy of empowering users to build on their own, tailored for their specific use-cases and nuance. This design was never implemented literally, but its general idea in empowering hobbyists is now ubiquitous across software with the advent of agents. Only time will tell where this future will take us, and when the Exokernel Philosophy will induce the next revolution in technology. Perhaps the Exokernel Design itself will come off from the dust of history books and into the fore again, as the optimal design for this next new and exciting technology.
+
+## The use of AI
+
+I wrote this entirely myself. I asked AI questions, usually paraphrasing boring facts but never ideas, though the facts AI bore did inspire some.
+
+[^os]: There is actually a connection to neuroscience here. Neuroscientists and philosophers have been concerned with bridging the gap between experience and neuronal activity, and there might exist a similar Operating System or abstraction layer between the two. This article has a more in-depth exposition: <https://austriaca.at/0xc1aa500d_0x000714f2>
+
+[^paper]: Engler, Kaashoek, and O'Toole, "Exokernel: An Operating System Architecture for Application-Level Resource Management," SOSP 1995. <https://www.cs.utexas.edu/~witchel/380L/papers/engler95sosp-exokernel.pdf>
+
+[^ai]: AI is obviously a field with much more breadth and depth, such as image generation, self-driving cars, signal processing (especially with companies like Neuralink), and more. However, most of AI is focused on language models and agents.
+
+[^romanticism]: People will generally have a different distribution of applications, mostly in the sense of falling into the Romanticism Trap. The Romanticism Trap is the idea that when people can create anything, then they will begin creating for the sake of creating, and creating becomes "l'art pour l'art" (art for the sake of art).
+
+[^granola]: In retrospect, this was most likely Granola (<https://www.granola.ai>).
+
+[^esp]: Think about how difficult it would be for a coding agent to run in a bare-metal ESP. For those who don't know, it is a microcontroller with no Operating System, and is a real pain-in-the-ass.
+
+[^cluster]: Personally, I was able to get a bunch of Raspberry Pis, a couple old Macs, a 14 TB hard drive, and an Apple Airport Extreme to create a little compute-cluster to run jobs and hold data, mostly for music and DJing. Claude Code did the entire setup, and aside from a few minor hiccups it has been running well.

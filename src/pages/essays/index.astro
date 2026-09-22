@@ -1,0 +1,17 @@
+---
+import Base from '../../layouts/Base.astro';
+import { publishedEssays, essayDate } from '../../lib/essays';
+const essays = await publishedEssays();
+---
+
+<Base title="Essays" description="Essays by John Abrahams." current="essays">
+  <h1>Essays</h1>
+  <ul class="list">
+    {essays.map((e) => (
+      <li>
+        <a href={`/essays/${e.id}`}>{e.data.title}</a>
+        {' '}<span class="muted">({essayDate(e.data.date)})</span>
+      </li>
+    ))}
+  </ul>
+</Base>
