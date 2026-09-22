@@ -29,7 +29,9 @@ identity:
   github_url: "https://github.com/jca225"
   # Summary line is omitted on purpose (CMU: "optional and in most cases not needed";
   # Google recruiter: remove it). Set to a single factual line if a posting wants one.
-  summary: ""
+  # 2026-09-22: one factual availability line, per the YC Work at a Startup resume review
+  # ("make your graduation/availability date the very first thing after your name").
+  summary: "M.S.E. in Data Science, University of Pennsylvania, December 2026. Available full-time from January 2027."
 
 # Verified against the official (unofficial) UPenn transcript, 2026-06-09.
 # Fall 2026 courses (Theory of ML, Emerging Theory of LLMs) are in progress; listing
@@ -109,7 +111,8 @@ experience:
       #   2026-06-10 (NA-1147). The catalog of what each bank's slice contains is still open.
       #   2026-09-12 rewrite: plain glosses taken from the deck's OUTLINE.md ("a bank is pointed at
       #   the wrong place" for the tenant-routing defect).
-      - "Built a generator that sets up a new bank's AWS infrastructure from one short YAML file, replacing about ten hand edits per bank. Those hand edits had misrouted traffic for all three banks in production."
+      #   2026-09-22: outcome moved first, per the YC resume review.
+      - "Replaced the ten or so hand edits that had misrouted production traffic for all three banks with a generator that sets up a new bank's AWS infrastructure from one short YAML file."
       # 1 Living documentation (Paul Short's project; John built the pipelines and the site).
       #   Source: documentation-automation/LOG.md (Phase 1 code-complete, 0% deployed 2026-08-11)
       #   and documentation-automation/system-scan/README.md (the daily scan, built not deployed).
@@ -139,7 +142,7 @@ experience:
 
   - id: nybss-swe
     org: "New York Brain & Spine Surgery"
-    role: "Software Engineer" # the 2023 research-associate stint is stated in the study bullet
+    role: "Software Engineer (part-time, team of three)" # part-time and two teammates: John, 2026-09-22
     dates: "May 2025 – Mar 2026"
     location: "White Plains, NY"
     kind: work
@@ -199,13 +202,16 @@ experience:
       - "Built Kronos, a cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account."
       # 1 Source: kronos-rs/crates/runtime (epoch deadline on the run's wall clock; preopen-based
       #   grants; CapabilityDenied) and the README runtime stack.
+      # 3 Source: Projects/hq/projects/kronos-plan-2026-09.md, 2026-09-09 prod collector run
+      #   ("all 7 named owners and 99 apps intact"). Added 2026-09-22 for the YC review's scale ask.
+      - "Live since July 2026, with 99 apps deployed by 7 registered accounts as of September."
       - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
       # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
       - "Wrote a paper on the research runtime's architecture (not yet published) that measures about 0.15 MiB of memory per added sandbox."
 
   - id: deployed-learning
     org: "Reasoning and Memory in Language Models"
-    role: "independent research"
+    role: "johncabrahams.com/writing" # independent research; the paper is listed under Papers and writeups (2026-09-22)
     dates: "Jul 2026 – Present"
     kind: research
     tags:
@@ -244,6 +250,11 @@ experience:
       #   C20: Coder-7B 8-hop 0.961 on the same entity task.
       - "Grafted a small recurrent reasoning module with learned halting (TRM-style) into the internal band a frozen language model uses for multi-step reasoning, training only about 5% of the parameters."
       - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and to 61% on entities never seen in training; on Qwen2.5-Coder-7B the graft reached 96% on eight-hop questions."
+      # 10, 11: 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.md (Sep 2026):
+      #   a parameter-matched LoRA beats the graft on every held-out probe by 0.4 to 0.85, three seeds.
+      #   Bullet 9 alone now misleads (honesty rule 4.3); use 10 and 11 in its place.
+      - "Grafted a small recurrent reasoning module with learned halting into a frozen language model. It raised Pythia-1B from near 0% to 54% on eight-hop questions."
+      - "Found that a LoRA adapter with the same parameter count beat the graft on every held-out test across three seeds, and wrote up why as a 12-page negative-result paper (unpublished)."
 
   # ---------------- projects ----------------
   - id: crowd-music
@@ -303,10 +314,11 @@ site:
       blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a paper that covers its architecture, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate. Live at kronoslabs.dev."
     - id: research
       featured: true
+      page: /projects/research
       title: "Reasoning and Memory in Language Models"
-      summary: "Grafting a recurrent reasoning module into frozen language models, and working out when a deployed model should learn a fact in its weights or just look it up."
+      summary: "A recurrent reasoning graft for frozen language models that lost to a plain adapter (a negative result), and when a deployed model should learn a fact in its weights or just look it up."
       tags: "Jul 2026 to present. Independent research. Pythia, Qwen2.5-Coder, PyTorch."
-      blurb: "Grafted a small recurrent reasoning module with learned halting (TRM-style) into the internal band a frozen language model uses for multi-step reasoning, training about 5% of the parameters. It took frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions and to 61% on entities never seen in training, and reached 96% on eight-hop questions on Qwen2.5-Coder-7B. Now studying when a deployed model should learn a new fact in its weights and when it should look the fact up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
+      blurb: "Grafted a small recurrent reasoning module with learned halting into a frozen language model, training about 5% of the parameters. It took Pythia-1B from near 0% to 54% on eight-hop questions, but a LoRA adapter of the same size beat it on every held-out test across three seeds, and a follow-up showed why: the graft reroutes computation the model already does and never builds anything new. Also studying when a deployed model should learn a new fact in its weights or look it up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
     - id: crowd-music
       featured: true
       page: /projects/crowd-aware-music
@@ -321,7 +333,7 @@ site:
     - id: nybss-swe
       page: /projects/therapy-chatbot
       title: "Clinical Therapy Chatbot"
-      tags: "May 2025 to Mar 2026. LLaMA, FastAPI."
+      tags: "May 2025 to Mar 2026. Part-time, team of three. LLaMA, FastAPI."
       blurb: "A therapy chatbot used in production at New York Brain & Spine Surgery: clinical rules steer each conversation, and the model writes the replies. One system covers several conditions."
     - id: compute-cluster
       title: "Home Compute Cluster"
@@ -354,6 +366,18 @@ publications:
     short_title: "Predictive Outcome Modeling After ACDF (LDR-C ROI Implant)"
     year: 2024
     with: "co-author, 236-patient cohort study"
+  # Added 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.{md,pdf} (Sep 2026).
+  - id: reasoning-graft
+    title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace Is Dominated by LoRA: A Negative Result"
+    short_title: "A Recurrent Reasoning Graft Is Dominated by LoRA: A Negative Result"
+    year: 2026
+    with: "paper, negative result"
+    meta: "2026. Paper, 12 pp. Unpublished."
+    pdf: /papers/reasoning-graft-negative-result.pdf
+    page: /projects/research
+    abstract: "Tests whether multi-step reasoning can be installed in a frozen language model by grafting a small recurrent module with learned halting into the band of the residual stream that multi-step reasoning passes through, training only the graft. It cannot: a LoRA adapter with the same number of trainable parameters beats the graft on every held-out test by 0.4 to 0.85 absolute accuracy across three seeds, and neither generalizes past its trained depth. A follow-up explains why: the graft reroutes computation the base already does, its recurrence is inert where it fails, and its halting head cannot see convergence. Also reports four measurement pitfalls for anyone training a module inside a frozen transformer."
+    on_resume: true
+    home: true
     meta: "2024. Co-author. 236-patient cohort."
     pdf: /papers/zimvie-acdf-predictive-modeling.pdf
     abstract: "Outcomes for 236 consecutive patients after anterior cervical discectomy and fusion with one implant, with binary logistic regression to identify which factors predicted a fair or poor result. Co-authored while a research associate at New York Brain & Spine Surgery."
@@ -394,9 +418,9 @@ resume:
   # per-id bullet selection for the one-page resume: an int = first N bullets,
   # a list = those 0-based indices, omitted = all bullets.
   bullet_limit:
-    ninth-wave: [0, 2, 3, 1] # generator, Studio, portal, docs; bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
+    ninth-wave: [0, 2, 3] # generator, Studio, portal; docs pipeline (1) moved to bank 2026-09-22 (YC review: "not deployed" reads weak, no metric exists); bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
     nybss-swe: [0, 1] # bullet 2 (the 2023 study) now lives in the nybss-research entry
     nybss-research: [0] # bullets 1-2 are experimental work not in the paper
-    kronos: [0, 1, 2]
-    deployed-learning: [8, 9, 0, 1, 2] # graft bullets first (8, 9), then continual learning; bullet 3 (one seed) and bullets 4-7 (caveated by C12) stay in the bank
+    kronos: [0, 1, 2, 3] # product, traction (added 2026-09-22), runtime, paper
+    deployed-learning: [10, 11, 0, 1] # 2026-09-22: honest graft pair (10, 11) replaces 8, 9; gate (2) to bank for space; graft bullets first (8, 9), then continual learning; bullet 3 (one seed) and bullets 4-7 (caveated by C12) stay in the bank
     crowd-music: [0, 1]
