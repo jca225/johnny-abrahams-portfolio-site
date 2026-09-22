@@ -112,7 +112,7 @@ experience:
       #   2026-09-12 rewrite: plain glosses taken from the deck's OUTLINE.md ("a bank is pointed at
       #   the wrong place" for the tenant-routing defect).
       #   2026-09-22: outcome moved first, per the YC resume review.
-      - "Replaced the ten or so hand edits that had misrouted production traffic for all three banks with a generator that sets up a new bank's AWS infrastructure from one short YAML file."
+      - "Replaced about ten hand edits that had misrouted production traffic for all three banks with a generator that sets up a new bank's AWS infrastructure from one short YAML file."
       # 1 Living documentation (Paul Short's project; John built the pipelines and the site).
       #   Source: documentation-automation/LOG.md (Phase 1 code-complete, 0% deployed 2026-08-11)
       #   and documentation-automation/system-scan/README.md (the daily scan, built not deployed).
@@ -253,7 +253,7 @@ experience:
       # 10, 11: 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.md (Sep 2026):
       #   a parameter-matched LoRA beats the graft on every held-out probe by 0.4 to 0.85, three seeds.
       #   Bullet 9 alone now misleads (honesty rule 4.3); use 10 and 11 in its place.
-      - "Grafted a small recurrent reasoning module with learned halting into a frozen language model. It raised Pythia-1B from near 0% to 54% on eight-hop questions."
+      - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and 61% on unseen entities, by grafting in a small recurrent reasoning module with learned halting."
       - "Found that a LoRA adapter with the same parameter count beat the graft on every held-out test across three seeds, and wrote up why as a 12-page negative-result paper (unpublished)."
 
   # ---------------- projects ----------------
