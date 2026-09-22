@@ -204,7 +204,9 @@ experience:
       #   grants; CapabilityDenied) and the README runtime stack.
       # 3 Source: Projects/hq/projects/kronos-plan-2026-09.md, 2026-09-09 prod collector run
       #   ("all 7 named owners and 99 apps intact"). Added 2026-09-22 for the YC review's scale ask.
-      - "Live since July 2026, with 99 apps deployed by 7 registered accounts as of September."
+      #   2026-09-22, John: the 7 accounts and 99 apps were nearly all his own; about three outside
+      #   users. Never quote the 7 / 99 counts as traction.
+      - "Live since July 2026, with its first three outside users."
       - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
       # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
       - "Wrote a paper on the research runtime's architecture (not yet published) that measures about 0.15 MiB of memory per added sandbox."
