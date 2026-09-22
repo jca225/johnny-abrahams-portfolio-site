@@ -31,7 +31,7 @@ identity:
   # Google recruiter: remove it). Set to a single factual line if a posting wants one.
   # 2026-09-22: one factual availability line, per the YC Work at a Startup resume review
   # ("make your graduation/availability date the very first thing after your name").
-  summary: "M.S.E. in Data Science, University of Pennsylvania, December 2026. Available full-time from January 2027."
+  summary: "M.S.E. in Data Science, University of Pennsylvania, December 2026. Available full-time from January 2027; open to part-time or contract work before then."
 
 # Verified against the official (unofficial) UPenn transcript, 2026-06-09.
 # Fall 2026 courses (Theory of ML, Emerging Theory of LLMs) are in progress; listing
