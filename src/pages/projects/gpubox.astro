@@ -1,0 +1,102 @@
+---
+import Project from '../../layouts/Project.astro';
+---
+
+<Project
+  title="gpubox"
+  subtitle="A control plane for renting marketplace GPUs for unattended training runs: it health-probes a box before trusting it, and it is built to destroy the box at a deadline even after the laptop that started the job has closed."
+  meta="Jul 2026 to present · Python, Vast.ai, S3"
+  links={[
+    /* Add when the repository is public:
+    { label: 'Code', href: 'https://github.com/jca225/gpubox', external: true },
+    */
+  ]}
+  description="gpubox rents Vast.ai GPU boxes for unattended ML training, probes them on real hardware before use, and destroys them at a deadline. Measured over 791 rentals, including the leak it did not catch."
+>
+  <h2>Why it exists</h2>
+  <p>
+    Renting GPUs by the hour on a marketplace is cheap and unreliable. Hosts are
+    consumer machines with variable disks and networks, offers get taken between
+    search and rent, and a box you forget to destroy bills until someone notices.
+    gpubox is the set of primitives that let several independent projects share
+    one account for multi-hour training jobs without stepping on each other or
+    leaking money.
+  </p>
+
+  <h2>What it does</h2>
+  <ul>
+    <li>
+      <strong>Rents a healthy box, not a listed one.</strong> It races several
+      offers at once, probes each on the real hardware (GPU present, VRAM floor,
+      disk throughput, CUDA usable), keeps the first winner, and tears down the
+      losers. Machines that fail are quarantined with a time limit so the pool
+      heals.
+    </li>
+    <li>
+      <strong>Destroys only what it can prove it owns.</strong> Teardown refuses
+      unless ownership is recorded, and it releases its record only after the
+      provider confirms the box is gone. A box whose destroy call fails stays on
+      the retry list instead of being dropped.
+    </li>
+    <li>
+      <strong>A billing ceiling that outlives the laptop.</strong> A detached
+      guardian process on an always-on host destroys the box at a wall-clock
+      deadline, copying results off first. Until September 20 this backstop had
+      never actually fired; see below.
+    </li>
+    <li>
+      <strong>Detached jobs with a liveness signal.</strong> Jobs run under tmux;
+      a workload-agnostic watchdog distinguishes a dead job, which is a fact,
+      from a stalled one, which is a judgment and only alerts.
+    </li>
+    <li>
+      <strong>Every offer decision is logged with its propensity.</strong> The
+      selector explores 10% of the time, and the full ranked candidate set is
+      recorded, so a different selection policy can be scored against the log
+      without renting anything.
+    </li>
+  </ul>
+
+  <h2>What the data says</h2>
+  <p>
+    Two months of the event log (July 18 to September 11, 2026): 791 create
+    calls, 524 rentals, 360 probe verdicts.
+  </p>
+  <ul>
+    <li>34% of create calls failed, mostly offers taken between search and rent, and rate limits from firing creates back to back.</li>
+    <li>29% of probes failed on SSH, and about half of those machines passed at another time. Real host faults (slow disk, slow network, dead) were 4%.</li>
+    <li>Inside the default filter (reliability at least 0.98, disk bandwidth at least 500 MB/s) the host failure rate was 2.3%. Outside it, 71%.</li>
+    <li>The cost of every failure over two months was about $4. The cost is time and pool size, not money.</li>
+    <li>A learned classifier of good versus bad hosts rediscovered the filter and did worse than the rule, with 15 positive examples. The right next model is a per-machine pass rate shrunk toward a per-GPU prior.</li>
+  </ul>
+  <p>
+    The proof it works: a 1B-parameter training run to step 2000, detached, with
+    about 2 GB of checkpoints synced to S3, delivered in 1 hour 57 minutes with
+    the box destroyed afterward and zero instances leaked.
+  </p>
+
+  <h2>The leak it did not catch</h2>
+  <p>
+    On September 20 a watcher on an always-on Raspberry Pi kept crashing and
+    restarting, and each restart rented a fresh RTX 4090. Nothing destroyed them:
+    ten boxes, about $4.40 an hour, until it was found and stopped. The post-mortem
+    from the event log found four defects. The worst: three timing constants in
+    three different modules disagreed, so every guardian decided it had been
+    superseded and exited cleanly without destroying anything. Its exit code
+    counted that as success, so the backstop had never once fired and nothing
+    looked wrong. A second: the Pi's SSH key was not registered with the account,
+    so most probes failed on authentication and innocent hosts were quarantined
+    while the race burned through offers. All four are fixed, and a test now pins
+    the three constants together.
+  </p>
+
+  <h2>What was hard</h2>
+  <p>
+    Most of the bugs that cost money lived in the seam between the code's assumptions
+    and the provider's actual behaviour, and none of them were caught by the 236
+    mutation-tested unit tests. They were caught by renting one box for a cent
+    and printing the raw output. The method that came out of it: capture real
+    output before writing any parser, and mutation-test every load-bearing
+    behaviour so a green suite cannot certify a bug.
+  </p>
+</Project>

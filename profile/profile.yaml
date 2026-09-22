@@ -341,6 +341,11 @@ site:
       title: "Home Compute Cluster"
       tags: "Aug 2026. K3s, Raspberry Pi, SOPS, Grafana."
       blurb: "A mixed-architecture K3s cluster (two Raspberry Pi 4s, an Ubuntu iMac control plane, a Lima VM on an Intel MacBook) with encrypted secrets, tested snapshot restores, and monitoring over Tailscale. It runs long unattended jobs so the laptop does not have to."
+    - id: gpubox
+      page: /projects/gpubox
+      title: "gpubox: renting marketplace GPUs without leaking money"
+      tags: "Jul 2026 to present. Python, Vast.ai, S3. 791 rentals measured."
+      blurb: "A small control plane for renting GPU boxes on the Vast.ai marketplace for unattended multi-hour training: race several offers, health-probe each on real hardware before trusting it, run the job detached, sync checkpoints to S3, and destroy the box at a deadline that survives the laptop closing. The event log of 791 create calls and 360 probe verdicts over two months shows where rentals actually fail: 34% of creates, 29% of probes on SSH, and only 4% on genuinely bad hosts."
     - id: quant-game
       page: /projects/quant-game
       title: "The Quant Game"
