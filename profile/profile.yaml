@@ -148,7 +148,7 @@ experience:
     kind: work
     tags: [llm, fastapi, backend, multi-agent, healthcare, full-stack, shipping]
     bullets:
-      - "Built a therapy chatbot used in production on LLaMA and FastAPI: clinical rules steer each conversation, and the model writes the replies."
+      - "Built the backend for a therapy chatbot on LLaMA and FastAPI: clinical rules steer each conversation, and the model writes the replies. The practice later canceled the project."
       - "Wrote the backend APIs and conversation-state handling, so prompts could be changed and tested quickly."
       - "Co-authored a study of outcomes for 236 spinal-fusion patients as a research associate there in 2023."
 
@@ -256,7 +256,8 @@ experience:
       #   a parameter-matched LoRA beats the graft on every held-out probe by 0.4 to 0.85, three seeds.
       #   Bullet 9 alone now misleads (honesty rule 4.3); use 10 and 11 in its place.
       - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and 61% on unseen entities, by grafting in a small recurrent reasoning module with learned halting."
-      - "Found that a LoRA adapter with the same parameter count beat the graft on every held-out test across three seeds, and wrote up why as a 12-page negative-result paper (unpublished)."
+      # John, 2026-09-24: the resume never says "negative result" (the site may).
+      - "Found that a LoRA adapter with the same parameter count beat the graft on every held-out test across three seeds, and wrote a 12-page paper on why (unpublished)."
 
   # ---------------- projects ----------------
   - id: crowd-music
@@ -336,7 +337,7 @@ site:
       page: /projects/therapy-chatbot
       title: "Clinical Therapy Chatbot"
       tags: "May 2025 to Mar 2026. Part-time, team of three. LLaMA, FastAPI."
-      blurb: "A therapy chatbot used in production at New York Brain & Spine Surgery: clinical rules steer each conversation, and the model writes the replies. One system covers several conditions."
+      blurb: "A therapy chatbot prototype built at New York Brain & Spine Surgery: clinical rules steer each conversation, and the model writes the replies. One system covers several conditions. The practice later canceled the project."
     - id: compute-cluster
       title: "Home Compute Cluster"
       tags: "Aug 2026. K3s, Raspberry Pi, SOPS, Grafana."
