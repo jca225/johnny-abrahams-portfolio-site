@@ -9,11 +9,12 @@ const pubs = profile.publications;
   <h1>Papers and writeups</h1>
   {pubs.map((w: any) => (
     <p>
-      <a href={w.pdf} target="_blank" rel="noopener"><b>{w.title}</b></a><br />
+      {w.pdf ? <a href={w.pdf} target="_blank" rel="noopener"><b>{w.title}</b></a> : <b>{w.title}</b>}<br />
       <span class="muted">{w.meta}</span><br />
       {w.abstract}<br />
-      {w.page && <><a href={w.page}>Project page</a> | </>}
-      <a href={w.pdf} target="_blank" rel="noopener">PDF</a>
+      {w.page && <a href={w.page}>Project page</a>}
+      {w.page && w.pdf && ' | '}
+      {w.pdf && <a href={w.pdf} target="_blank" rel="noopener">PDF</a>}
       {w.github && <> | <a href={w.github} target="_blank" rel="noopener">GitHub</a></>}
     </p>
   ))}

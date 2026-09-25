@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import { authorshipFor, LABEL } from '../lib/authorship';
 
 interface Props {
   title?: string;
@@ -16,6 +17,7 @@ const {
 
 const fullTitle = title === 'John Abrahams' ? title : `${title} - John Abrahams`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const authorship = authorshipFor(Astro.url.pathname);
 ---
 
 <!doctype html>
@@ -40,6 +42,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
       <main>
         <slot />
       </main>
+      <footer class="foot muted">
+        {LABEL[authorship.by]} ·
+        <a href="https://github.com/jca225">GitHub</a> ·
+        <a href="https://www.linkedin.com/in/john-abrahams-94a04924a">LinkedIn</a> ·
+        <a href="mailto:johnnycabrahams@gmail.com">Email</a>
+      </footer>
     </div>
   </body>
 </html>

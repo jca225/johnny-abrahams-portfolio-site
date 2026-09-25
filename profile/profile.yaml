@@ -189,7 +189,7 @@ experience:
   # ---------------- research ----------------
   - id: kronos
     org: "Kronos: a Type II exovisor"
-    role: "kronoslabs.dev"
+    role: "Independent project"
     dates: "Oct 2024 – Present"
     kind: research
     tags:
@@ -206,7 +206,7 @@ experience:
       #   ("all 7 named owners and 99 apps intact"). Added 2026-09-22 for the YC review's scale ask.
       #   2026-09-22, John: the 7 accounts and 99 apps were nearly all his own; about three outside
       #   users. Never quote the 7 / 99 counts as traction.
-      - "Live since July 2026, with its first three outside users."
+      - "Ran in production from July 2026 with its first three outside users."
       - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
       # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
       - "Wrote a paper on the research runtime's architecture (not yet published) that measures about 0.15 MiB of memory per added sandbox."
@@ -301,8 +301,8 @@ experience:
 site:
   # Homepage paragraph (PG-shaped homepage, 2026-09-12).
   bio: >-
-    I'm a master's student in Data Science at Penn, graduating in December 2026. I build Kronos,
-    a cloud for small software, live at kronoslabs.dev. This summer I was a software engineer
+    I'm a master's student in Data Science at Penn, graduating in December 2026. I built Kronos,
+    a cloud for small software. This summer I was a software engineer
     intern at Ninth Wave, an open-finance fintech. I'm currently researching language models and
     world models.
   # `featured` items appear under Selected work on the homepage with their `summary`; every item
@@ -312,14 +312,14 @@ site:
       featured: true
       page: /projects/kronos
       title: "Kronos: a Type II Exovisor"
-      summary: "A cloud for small software: deploy a Python or JavaScript program and share a link anyone can run. Live at kronoslabs.dev."
+      summary: "A cloud for small software: deploy a Python or JavaScript program and share a link anyone can run."
       tags: "2024 to present. Rust, WebAssembly. Paper on the architecture."
-      blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a paper that covers its architecture, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate. Live at kronoslabs.dev."
+      blurb: "A cloud for small software: a person or an AI agent deploys a Python or JavaScript program, and anyone with the link can run it without an account. Each program runs in its own WebAssembly sandbox with a time limit and reaches only what its owner granted. The research runtime it grew from is described in a paper that covers its architecture, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate."
     - id: research
       featured: true
       page: /projects/research
       title: "Reasoning and Memory in Language Models"
-      summary: "A recurrent reasoning graft for frozen language models that lost to a plain adapter (a negative result), and when a deployed model should learn a fact in its weights or just look it up."
+      summary: "A recurrent reasoning graft for frozen language models, and when a deployed model should learn a fact in its weights or just look it up."
       tags: "Jul 2026 to present. Independent research. Pythia, Qwen2.5-Coder, PyTorch."
       blurb: "Grafted a small recurrent reasoning module with learned halting into a frozen language model, training about 5% of the parameters. It took Pythia-1B from near 0% to 54% on eight-hop questions, but a LoRA adapter of the same size beat it on every held-out test across three seeds, and a follow-up showed why: the graft reroutes computation the model already does and never builds anything new. Also studying when a deployed model should learn a new fact in its weights or look it up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
     - id: crowd-music
@@ -371,12 +371,11 @@ publications:
     home: true
   # Added 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.{md,pdf} (Sep 2026).
   - id: reasoning-graft
-    title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace Is Dominated by LoRA: A Negative Result"
-    short_title: "A Recurrent Reasoning Graft Is Dominated by LoRA: A Negative Result"
+    title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace"
+    short_title: "A Recurrent Reasoning Graft in a Frozen Language Model"
     year: 2026
-    with: "paper, negative result"
-    meta: "2026. Paper, 12 pp. Unpublished."
-    pdf: /papers/reasoning-graft-negative-result.pdf
+    with: "unpublished"
+    meta: "2026. Paper, 12 pp. Unpublished; available on request."
     page: /projects/research
     abstract: "Tests whether multi-step reasoning can be installed in a frozen language model by grafting a small recurrent module with learned halting into the band of the residual stream that multi-step reasoning passes through, training only the graft. It cannot: a LoRA adapter with the same number of trainable parameters beats the graft on every held-out test by 0.4 to 0.85 absolute accuracy across three seeds, and neither generalizes past its trained depth. A follow-up explains why: the graft reroutes computation the base already does, its recurrence is inert where it fails, and its halting head cannot see convergence. Also reports four measurement pitfalls for anyone training a module inside a frozen transformer."
     on_resume: true

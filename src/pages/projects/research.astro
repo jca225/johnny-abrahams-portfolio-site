@@ -6,9 +6,9 @@ import Project from '../../layouts/Project.astro';
   title="Reasoning and Memory in Language Models"
   subtitle="Two questions about changing a language model after it is trained: can a small module installed inside a frozen model teach it to reason in several steps, and when should a deployed model learn a new fact in its weights instead of looking it up?"
   meta="Jul 2026 to present · Independent research · Pythia, Qwen2.5-Coder, PyTorch · Not yet published"
-  description="Independent research on a recurrent reasoning graft in frozen language models (a negative result) and on when a deployed model should learn a fact in its weights or retrieve it."
+  description="Independent research on a recurrent reasoning graft in frozen language models and on when a deployed model should learn a fact in its weights or retrieve it."
 >
-  <h2>1. A reasoning graft that lost to its baseline</h2>
+  <h2>1. A recurrent reasoning graft</h2>
   <p>
     Recurrent reasoning models like TRM and HRM get strong results from small
     modules that iterate and decide for themselves when to stop. Interpretability
@@ -46,7 +46,7 @@ import Project from '../../layouts/Project.astro';
     </li>
   </ul>
   <p>
-    I wrote this up as a 12-page negative-result paper, along with four
+    I wrote this up as a 12-page paper, along with four
     measurement pitfalls that affect anyone training a module inside a frozen
     transformer. The one I would pass on first: run the parameter-matched
     baseline before anything else. I ran it last.

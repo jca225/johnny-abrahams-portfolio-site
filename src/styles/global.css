@@ -199,3 +199,8 @@ th {
 .essay .footnotes a {
   overflow-wrap: anywhere;
 }
+
+.foot {
+  margin-top: 4em;
+  font-size: 0.8em;
+}

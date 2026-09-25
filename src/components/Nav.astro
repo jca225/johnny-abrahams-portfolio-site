@@ -6,12 +6,9 @@ const { current } = Astro.props;
 ---
 
 <nav class="top">
-  {current !== 'home' && <><a href="/">Home</a> · </>}
+  <a href="/">Home</a> ·
   <a href="/essays">Essays</a> ·
   <a href="/projects">All projects</a> ·
   <a href="/resume.pdf">Resume</a> ·
-  <a href="/writing">Writing</a> ·
-  <a href="https://github.com/jca225">GitHub</a> ·
-  <a href="https://www.linkedin.com/in/john-abrahams-94a04924a">LinkedIn</a> ·
-  <a href="mailto:johnnycabrahams@gmail.com">Email</a>
+  <a href="/writing">Writing</a>
 </nav>
