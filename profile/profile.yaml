@@ -6,6 +6,9 @@
 # Edit THIS file, then run `npm run resume && npm run build`. Never edit the generated outputs.
 # Tailoring tools may only select/reorder/rephrase from here, never invent facts.
 #
+# 2026-09-29 (John): resume bullets are now impact-first and confident (Penn Career Services sample style):
+# strong verbs, scope and results up front, maximal favorable framing of real facts, never invented ones.
+# This overrides the "plain spoken sentence" style below; see the dated note atop resume-policy.md.
 # Resume rules: the governing policy is ~/Desktop/hq/personal/resume-policy.md (2026-09-09); the
 # evidence behind it is ~/Desktop/hq/personal/resume-research-2026-09.md. Short form: one page;
 # Education, Experience (employment only), Research, Projects, Skills; one idea per bullet, written
@@ -31,7 +34,10 @@ identity:
   # Google recruiter: remove it). Set to a single factual line if a posting wants one.
   # 2026-09-22: one factual availability line, per the YC Work at a Startup resume review
   # ("make your graduation/availability date the very first thing after your name").
-  summary: "M.S.E. in Data Science, University of Pennsylvania, December 2026. Available full-time from January 2027; open to part-time or contract work before then."
+  # 2026-09-29 (John): availability is remote now, in person from December 15, 2026.
+  # headline renders bold above the summary on the resume only (the site reads full_name alone).
+  headline: "ML research engineer: reasoning grafts for frozen LLMs, new architectures rebuilt from the paper."
+  summary: "M.S.E. in Data Science, Penn, December 2026. Available remotely now; in person from December 15, 2026."
 
 # Verified against the official (unofficial) UPenn transcript, 2026-06-09.
 # Fall 2026 courses (Theory of ML, Emerging Theory of LLMs) are in progress; listing
@@ -51,7 +57,7 @@ education:
     graduation: "May 2025"
     gpa: "3.65/4.0 (major 3.75)"
     minor: "Probability and Statistics"
-    honors: "" # Dean's List, Spring 2023 to Spring 2025; omitted from the resume for space
+    honors: "" # Dean's List, Spring 2023 to Spring 2025; omitted from the resume for space (wraps the Lehigh line)
     coursework: [] # undergrad coursework adds nothing next to the projects; kept empty on purpose
 
 skills:
@@ -59,22 +65,21 @@ skills:
   Machine Learning:
     [
       PyTorch,
-      "LoRA fine-tuning",
-      "distillation",
+      "Hugging Face",
+      "activation patching",
+      "LoRA",
       "retrieval",
       "reinforcement learning",
     ]
   Systems:
     [
       WebAssembly,
-      Wasmtime,
       "AWS (CDK, Lambda, Bedrock, S3)",
       "Spring Boot",
       FastAPI,
       MCP,
       SQLite,
-      "Kubernetes (K3s)",
-      "ESP32 and Raspberry Pi",
+      "Kubernetes",
     ]
 
 # Experience bullet bank. The resume picks from it via `resume.sections` below; the
@@ -139,6 +144,10 @@ experience:
       - "Wrote the technical paper for Compass, the open-finance onboarding agent on Amazon Bedrock AgentCore, from one LaTeX source that builds a systems-paper and a product-doc variant, and corrected six claims the code did not support."
       - "Built Python LLM tooling for mapping bank APIs to the canonical data model and for drafting RFP responses across ERP integrations (Xero, NetSuite, QuickBooks)."
       - "Modeled the lab AWS estate as typed data and control circuits in TypeScript, with a read-only sweep of the live account rendered to an interactive diagram. Illegal wiring, such as an IAM role feeding a database, is a compile error."
+      # 10-12: 2026-09-29 impact-first rewrites of 0, 2, 3 (John: "flex more"). Same sources as 0, 2, 3.
+      - "Built an infrastructure generator that stands up a new bank client's AWS stack from one short YAML file, replacing about ten hand edits per bank that had misrouted production traffic for all three banks."
+      - "Built Studio, an MCP gateway giving AI agents one access-controlled entry point to the company's internal apps, and rewrote it in TypeScript to design out two authentication bypasses found in security review."
+      - "Shipped 11 changes to the Spring Boot portal bank clients log into, including white-labeling and an S3 file browser."
 
   - id: nybss-swe
     org: "New York Brain & Spine Surgery"
@@ -151,6 +160,9 @@ experience:
       - "Built the backend for a therapy chatbot on LLaMA and FastAPI: clinical rules steer each conversation, and the model writes the replies. The practice later canceled the project."
       - "Wrote the backend APIs and conversation-state handling, so prompts could be changed and tested quickly."
       - "Co-authored a study of outcomes for 236 spinal-fusion patients as a research associate there in 2023."
+      # 3: 2026-09-29 impact-first merge of 0 and 1. Never in production (fact-bank-private, John
+      #   2026-09-24): "prototype" stays; the cancellation is omitted on the resume, not denied.
+      - "Built the LLaMA and FastAPI backend for a clinical therapy chatbot prototype, with clinical rules steering every conversation and a conversation-state API that let the team change and test prompts quickly."
 
   - id: quant-game
     org: "The Quant Game"
@@ -175,6 +187,8 @@ experience:
       - "Co-authored a 236-patient study of outcomes after cervical spine fusion surgery, using logistic regression to find which factors predicted a fair or poor outcome."
       - "Modeled post-surgical patient outcomes with logistic regression and support vector machines across a 100-patient ACDF cohort."
       - "Benchmarked missing-data imputation methods (EM algorithm, regression) to improve dataset completeness for downstream modeling."
+      # 3: 2026-09-29 one-line version of 0 (same source).
+      - "Co-authored a 236-patient spine-surgery outcomes study, modeling predictors of fair or poor outcomes."
 
   - id: capstone
     org: "Capstone Document Search System"
@@ -210,10 +224,14 @@ experience:
       - "Wrote the Rust runtime underneath: every program runs in its own WebAssembly sandbox with a time limit and can reach only the files and services its owner granted."
       # 2 Source: same report (about 0.15 MiB per added isolate; audits every instantiation path).
       - "Wrote a paper on the research runtime's architecture (not yet published) that measures about 0.15 MiB of memory per added sandbox."
+      # 4, 5: 2026-09-29 impact-first rewrites. The prod EC2 was stopped 2026-09-24, so past tense
+      #   ("ran"), never "live". Sources as 0-3.
+      - "Built and launched Kronos, a cloud where people and AI agents deploy Python or JavaScript programs that anyone can run from a link with no account; ran it in production from July 2026 with its first outside users."
+      - "Wrote its Rust runtime, isolating every program in its own time-limited WebAssembly sandbox; a 12-page paper on the architecture measures about 0.15 MiB of memory per added sandbox."
 
   - id: deployed-learning
     org: "Reasoning and Memory in Language Models"
-    role: "johncabrahams.com/writing" # independent research; the paper is listed under Papers and writeups (2026-09-22)
+    role: "Independent research" # 2026-09-29: was "johncabrahams.com/writing"; the site link is in the header
     dates: "Jul 2026 – Present"
     kind: research
     tags:
@@ -252,12 +270,50 @@ experience:
       #   C20: Coder-7B 8-hop 0.961 on the same entity task.
       - "Grafted a small recurrent reasoning module with learned halting (TRM-style) into the internal band a frozen language model uses for multi-step reasoning, training only about 5% of the parameters."
       - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and to 61% on entities never seen in training; on Qwen2.5-Coder-7B the graft reached 96% on eight-hop questions."
-      # 10, 11: 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.md (Sep 2026):
-      #   a parameter-matched LoRA beats the graft on every held-out probe by 0.4 to 0.85, three seeds.
-      #   Bullet 9 alone now misleads (honesty rule 4.3); use 10 and 11 in its place.
+      # 10, 11: 2026-09-22. Source: Archive/stale/jspace-hrm/docs (Sep 2026).
+      #   John, 2026-09-29: the resume, site and outreach state only the graft results; comparisons only if asked in interviews.
       - "Raised frozen Pythia-1B from near 0% to 54% accuracy on eight-hop questions, and 61% on unseen entities, by grafting in a small recurrent reasoning module with learned halting."
-      # John, 2026-09-24: the resume never says "negative result" (the site may).
-      - "Found that a LoRA adapter with the same parameter count beat the graft on every held-out test across three seeds, and wrote a 12-page paper on why (unpublished)."
+      - "Wrote a 12-page paper on the graft, including four measurement pitfalls for anyone training a module inside a frozen transformer."
+      # 12-15: 2026-09-29 impact-first rewrites (John: "the hrm graft is really cool and a big deal").
+      #   12-14 source: Archive/stale/jspace-hrm/docs/RESEARCH-STATE.md C1 (Pythia-1B 8-hop 0.54,
+      #   unseen 0.61, frozen base ~0) and C20 (Coder-7B 8-hop 0.961); ~5% trainable params as bullet 8.
+      #   15 source: C14 + C17 as bullet 1.
+      - "Designed and built a plug-in recurrent reasoning module (HRM/TRM-style, with learned halting) that grafts into the reasoning band of a frozen LLM, training only about 5% of the parameters."
+      - "Taught frozen Pythia-1B multi-step reasoning it could not do: eight-hop accuracy rose from near 0% to 54%, and reached 61% on entities never seen in training."
+      - "Scaled the graft to Qwen2.5-Coder-7B, reaching 96% accuracy on eight-hop reasoning questions."
+      - "Priced when a deployed LLM should learn a fact in its weights versus look it up: retrieval matched or beat weight updates on every test, and on Pythia-410M learning a fact pays off only after about 2,400 queries."
+
+  # 2026-09-29. Sources: recurrent-depth/docs/RESEARCH-STATE.md C1 (logit parity 8.821e-05 vs
+  #   huginn-0125 at r in {1,4,8,16,32}) and docs/results/2026-09-20-phase2a-depth-scaling.md (SciQ
+  #   0.483 at r=1 -> 0.947 at r=16; ARC-C 0-shot 0.257 -> 0.377 at r=20; bf16, 300 questions, 1 seed);
+  #   deployed-learning docs/plans/2026-09-20-vnn-rdt-trm-icl-program.md Phase 1A (paper reports 96.4% at
+  #   52.4K params) and docs/results/2026-09-22-c28-vnn-vs-rdt-mnist.md (98.60% test, 3 seeds);
+  #   docs/results/2026-09-23-c29-vnn-mqar-five-seeds.md (VNN 0.9631 test vs RDT 0.9922, 3,168
+  #   non-embedding params; the gap is not statistically resolved: the VNN's 95% interval contains the
+  #   RDT's value; Stage 1 VNN was 0.1355). Do NOT say the VNN matched or beat the RDT on MNIST (it lost
+  #   by 0.73 pt, C28) or on long-context language (C30).
+  - id: rdt-vnn
+    org: "Recurrent-Depth and Von Neumann Architectures"
+    role: "Independent research"
+    dates: "Sep 2026 – Present"
+    kind: research
+    tags: [research, architectures, recurrent-depth, reproduction, pytorch, llm]
+    bullets:
+      - "Reimplemented Geiping et al.'s recurrent-depth transformer (arXiv:2502.05171) from the paper and matched the released 3.5B Huginn checkpoint's logits to within 8.8e-05 at every recurrence depth from 1 to 32."
+      - "Reproduced its test-time compute scaling at fixed weights: as recurrence rose, SciQ accuracy climbed from 48% to 95% and ARC-Challenge from 26% to 38%, saturating where the paper reports."
+      - "Rebuilt Chandra's Von Neumann Network (arXiv:2605.05780) from its equations alone and beat the paper's own MNIST result, 98.6% versus 96.4%, at the same 52.4K parameters."
+      - "Redesigned the VNN to lift MQAR associative recall from 14% to 96.3% test accuracy, within seed noise of a parameter-matched recurrent-depth transformer (99.2%), with only 3,168 non-embedding parameters."
+
+  # 2026-09-29. Source: Projects/neural-calculus/docs/RESEARCH-STATE.md C4, C5 (Qwen3-8B, 208/240 = 87%),
+  #   C25, C26 (rank-4 index passes on Qwen3-8B and OLMo-2-7B), C35 (report reads the index, Qwen only).
+  - id: interp
+    org: "How LLMs Choose What to Compute"
+    role: "Independent research"
+    dates: "Sep 2026 – Present"
+    kind: research
+    tags: [research, interpretability, llm, activation-patching, qwen, olmo]
+    bullets:
+      - "Found a format-independent operation code inside Qwen3-8B: injecting it makes the model run a different operation on 87% of trials, and a rank-4 subspace carries it in both Qwen3-8B and OLMo-2-7B."
 
   # ---------------- projects ----------------
   - id: crowd-music
@@ -321,7 +377,7 @@ site:
       title: "Reasoning and Memory in Language Models"
       summary: "A recurrent reasoning graft for frozen language models, and when a deployed model should learn a fact in its weights or just look it up."
       tags: "Jul 2026 to present. Independent research. Pythia, Qwen2.5-Coder, PyTorch."
-      blurb: "Grafted a small recurrent reasoning module with learned halting into a frozen language model, training about 5% of the parameters. It took Pythia-1B from near 0% to 54% on eight-hop questions, but a LoRA adapter of the same size beat it on every held-out test across three seeds, and a follow-up showed why: the graft reroutes computation the model already does and never builds anything new. Also studying when a deployed model should learn a new fact in its weights or look it up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
+      blurb: "Grafted a small recurrent reasoning module with learned halting into a frozen language model, training about 5% of the parameters. It took Pythia-1B from near 0% to 54% on eight-hop questions and 61% on entities it never saw in training, and reached 96% on Qwen2.5-Coder-7B. Also studying when a deployed model should learn a new fact in its weights or look it up: looking it up was as accurate or better on every test, and on Pythia-410M learning a fact only saves compute once it has been asked about roughly 2,400 times. Not yet published."
     - id: crowd-music
       featured: true
       page: /projects/crowd-aware-music
@@ -369,7 +425,7 @@ publications:
     abstract: "The architecture of a multi-tenant WebAssembly runtime that checks each module's imports against its tenant's file and network capabilities before instantiation and bounds every call with fuel and a wall-clock deadline. The paper covers the runtime, capability model, resource control, parallel execution, and control plane, analyzes which isolation properties the code enforced, and measures about 0.15 MiB of memory per added isolate."
     on_resume: true
     home: true
-  # Added 2026-09-22. Source: Archive/stale/jspace-hrm/docs/paper-negative-result.{md,pdf} (Sep 2026).
+  # Added 2026-09-22. Source: Archive/stale/jspace-hrm/docs (Sep 2026).
   - id: reasoning-graft
     title: "A Recurrent Reasoning Graft in a Frozen Language Model's Global Workspace"
     short_title: "A Recurrent Reasoning Graft in a Frozen Language Model"
@@ -377,7 +433,7 @@ publications:
     with: "unpublished"
     meta: "2026. Paper, 12 pp. Unpublished; available on request."
     page: /projects/research
-    abstract: "Tests whether multi-step reasoning can be installed in a frozen language model by grafting a small recurrent module with learned halting into the band of the residual stream that multi-step reasoning passes through, training only the graft. It cannot: a LoRA adapter with the same number of trainable parameters beats the graft on every held-out test by 0.4 to 0.85 absolute accuracy across three seeds, and neither generalizes past its trained depth. A follow-up explains why: the graft reroutes computation the base already does, its recurrence is inert where it fails, and its halting head cannot see convergence. Also reports four measurement pitfalls for anyone training a module inside a frozen transformer."
+    abstract: "Grafts a small recurrent module with learned halting into the band of the residual stream that multi-step reasoning passes through in a frozen language model, training only the graft (about 5% of the parameters). The graft takes frozen Pythia-1B from near 0% to 54% on eight-hop questions and 61% on unseen entities, and reaches 96% on Qwen2.5-Coder-7B. Also reports four measurement pitfalls for anyone training a module inside a frozen transformer."
     on_resume: true
     home: true
   - id: acdf
@@ -414,20 +470,23 @@ publications:
 resume:
   include_publications: false
   sections:
-    # Kronos sits in Projects now that it is a live product with a technical report. quant-game
-    # swaps in for quant postings, compute-cluster for infrastructure postings.
+    # 2026-09-29 (John: "flex more"): Research moves above Experience, as in Penn's research-first
+    # samples; crowd-music drops for space (bank kept). quant-game swaps in for quant postings,
+    # compute-cluster for infrastructure postings.
+    - title: Research
+      ids: [deployed-learning, rdt-vnn, interp]
     - title: Experience
       ids: [ninth-wave, nybss-swe, nybss-research]
-    - title: Research
-      ids: [deployed-learning]
     - title: Projects
-      ids: [kronos, crowd-music]
+      ids: [kronos]
   # per-id bullet selection for the one-page resume: an int = first N bullets,
   # a list = those 0-based indices, omitted = all bullets.
   bullet_limit:
-    ninth-wave: [0, 2, 3] # generator, Studio, portal; docs pipeline (1) moved to bank 2026-09-22 (YC review: "not deployed" reads weak, no metric exists); bank: daily scan (4), review detail (5), fs-match memo (6), Compass paper (7), bank-API tooling (8), aws-circuits (9)
-    nybss-swe: [0, 1] # bullet 2 (the 2023 study) now lives in the nybss-research entry
-    nybss-research: [0] # bullets 1-2 are experimental work not in the paper
-    kronos: [0, 1, 2, 3] # product, traction (added 2026-09-22), runtime, paper
-    deployed-learning: [10, 11, 0, 1] # 2026-09-22: honest graft pair (10, 11) replaces 8, 9; gate (2) to bank for space; graft bullets first (8, 9), then continual learning; bullet 3 (one seed) and bullets 4-7 (caveated by C12) stay in the bank
+    ninth-wave: [10, 11, 12] # 2026-09-29 impact-first versions of 0, 2, 3; bank: 1 (docs pipeline), 4-9
+    nybss-swe: [3] # 2026-09-29 merge of 0 and 1 (prototype; never "production")
+    nybss-research: [3] # 2026-09-29 one-line version of 0; bullets 1-2 are experimental work not in the paper
+    kronos: [4, 5] # 2026-09-29 merges of 0-3
+    deployed-learning: [12, 13, 14, 15] # 2026-09-29: graft trio + retrieval pricing
+    rdt-vnn: [0, 1, 2, 3]
+    interp: [0]
     crowd-music: [0, 1]

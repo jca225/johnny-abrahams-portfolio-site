@@ -19,37 +19,13 @@ import Project from '../../layouts/Project.astro';
   </p>
   <p>
     The graft took frozen Pythia-1B from near 0% to 54% accuracy on eight-hop
-    questions, and to 61% on entities it never saw in training. Those numbers
-    reproduce. They also turned out not to answer the question, because the
-    comparison that decides it had not been run: a plain LoRA adapter with the
-    same number of trainable parameters on the same frozen model. When it was
-    run, the adapter beat the graft on every held-out test, by 0.4 to 0.85
-    absolute accuracy, across three seeds. Neither method generalized past the
-    number of hops it was trained on.
+    questions, and to 61% on entities it never saw in training, while the rest
+    of the model stayed frozen. The same graft on Qwen2.5-Coder-7B reached 96%
+    on eight-hop questions.
   </p>
-  <p>Follow-up experiments showed why:</p>
-  <ul>
-    <li>
-      <strong>The graft reroutes and never builds.</strong> It redirects
-      computation the frozen model already does. It never produced a value that
-      was not already in the prompt.
-    </li>
-    <li>
-      <strong>The extra rounds do nothing.</strong> On tasks it fails, the
-      recurrence reaches a fixed point after the second round.
-    </li>
-    <li>
-      <strong>The halting head cannot see convergence.</strong> A normalization
-      layer on the recurrent state removes the one quantity that would signal it.
-      Fixing that made halting informative and bought no accuracy, because the
-      extra rounds had nothing to compute.
-    </li>
-  </ul>
   <p>
-    I wrote this up as a 12-page paper, along with four
-    measurement pitfalls that affect anyone training a module inside a frozen
-    transformer. The one I would pass on first: run the parameter-matched
-    baseline before anything else. I ran it last.
+    I wrote this up as a 12-page paper, along with four measurement pitfalls
+    that affect anyone training a module inside a frozen transformer.
   </p>
 
   <h2>2. Learn a fact, or look it up?</h2>

@@ -27,7 +27,9 @@
 \href{<<id.linkedin_url>>}{<<id.linkedin_url | strip_scheme>>}
 \end{center}
 <%if id.summary%>\vspace{-4pt}
-<<id.summary | tex>>
+{\centering
+<%if id.headline%>\textbf{<<id.headline | tex>>}\\
+<%endif%><<id.summary | tex>>\par}
 <%endif%>
 \section{Education}
 <%- for e in education%>
