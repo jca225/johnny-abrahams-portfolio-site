@@ -36,7 +36,7 @@ identity:
   # ("make your graduation/availability date the very first thing after your name").
   # 2026-09-29 (John): availability is remote now, in person from December 15, 2026.
   # headline renders bold above the summary on the resume only (the site reads full_name alone).
-  headline: "ML research engineer: reasoning grafts for frozen LLMs, new architectures rebuilt from the paper."
+  headline: "Machine learning engineer: LLM research and AI infrastructure."
   summary: "M.S.E. in Data Science, Penn, December 2026. Available remotely now; in person from December 15, 2026."
 
 # Verified against the official (unofficial) UPenn transcript, 2026-06-09.
