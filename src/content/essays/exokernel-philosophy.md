@@ -2,6 +2,7 @@
 title: "The Exokernel Philosophy"
 date: 2026-09-22
 description: "The exokernel let each application bring its own operating system policies and never caught on. Coding agents may bring its philosophy back at a different granularity."
+draft: true
 ---
 
 Operating Systems in computers have one fundamental job: to manage the interface between the user and the hardware of the device they are using.[^os] Operating Systems do this with policies, and these policies entail tradeoffs. Reading and writing files from disk are both common activities for a computer, but what if one application, like a streaming service, did a lot of reads and not so many writes? Correspondingly, what if an application, like a digital audio workstation, did a lot of writes and not so many reads? Optimizing reading does so at the expense of writing and vice versa, so Operating Systems try to find the middle ground for the common user.
